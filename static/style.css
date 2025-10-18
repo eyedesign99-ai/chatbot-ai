@@ -12,10 +12,10 @@ body {
     padding: 0px;
 }
 .chat-box {
-    height: 350px;
+    height: 300px;
     overflow-y: auto;
     border: 1px solid #ffffff;
-    padding: 15px;
+    padding: 5px;
     background-color: #ffffff;
     margin-bottom: 15px;
     border-radius: 8px;
@@ -30,7 +30,6 @@ input[type="text"] {
     font-size: 16px;
     border-radius: 8px;
     border: 1px solid #ccc;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
 }
 button {
     padding: 12px 20px;
