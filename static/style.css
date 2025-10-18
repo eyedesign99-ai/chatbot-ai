@@ -1,0 +1,128 @@
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #ffffff;
+    padding: 40px;
+    margin: 0;
+}
+.container {
+    max-width: 600px;
+    margin: auto;
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+.chat-box {
+    height: 600px;
+    overflow-y: auto;
+    border: 1px solid #ffffff;
+    padding: 15px;
+    background-color: #ffffff;
+    margin-bottom: 15px;
+    border-radius: 8px;
+}
+.input-area {
+    display: flex;
+    gap: 10px;
+}
+input[type="text"] {
+    flex: 1;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+}
+button {
+    padding: 12px 20px;
+    font-size: 16px;
+    background-color: #000307;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+button:hover {
+    background-color: #000305;
+}
+.send-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #000000;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.send-btn:hover {
+    background-color: #0056b3;
+}
+
+.send-btn svg {
+    pointer-events: none;
+}
+
+.chat-bubble {
+    background-color: #f0f0f0;
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin: 6px 0;
+    display: inline-block;
+    max-width: 90%;
+    word-wrap: break-word;
+}
+
+.chat-bubble.user {
+    background-color: #badbfa;
+    border-radius: 12px;
+    padding: 10px 14px;
+    margin: 6px 0;
+    display: inline-block;
+    max-width: 70%;
+    word-wrap: break-word;
+    align-self: flex-end;
+    float: right;
+    text-align: right;
+    clear: both;
+}
+
+.chat-row {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.chat-bubble.bot {
+    background-color: #f0f0f0;
+    border-radius: 12px;
+    padding: 10px 14px;
+    display: inline-block;
+    max-width: 100%;
+    word-wrap: break-word;
+}
+
+.loading-icon {
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+img.fade-in {
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+}
+
+img.fade-in.show {
+    opacity: 1;
+}
+
