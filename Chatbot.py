@@ -79,7 +79,7 @@ def enrich_product_data(context_list):
             img_path = item["hình_ảnh"]
             sp_id = item["id"]
             img_id = sp_id.split("-")[1] if "-" in sp_id else sp_id
-            item["hình_html"] = f"<img src='/static/product/{img_path}' style='max-width: 100%; border-radius: 10px;'>"
+            item["hình_html"] = f"<img src='https://cgi.vn/image/{img_path}' style='max-width:100%; border-radius:10px;'>"
             item["link_html"] = f"<p><a href='https://cgi.vn/san-pham/{img_id}' target='_blank'>Xem chi tiết sản phẩm</a></p>"
     return context_list
 
