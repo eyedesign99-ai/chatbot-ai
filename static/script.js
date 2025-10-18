@@ -8,7 +8,7 @@ async function sendMessage() {
 
     showLoadingIcon(true);
 
-    const response = await fetch("/chat", {
+    const response = await fetch("https://chatbot-ai-pm0b.onrender.com/chat", {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message })
@@ -16,7 +16,7 @@ async function sendMessage() {
 
     const data = await response.json();
 
-    typeResponse("Bot", data.response);
+    typeResponse("Bot", `${data.response || ''}${data.hinh_html || ''}`);
 
     showLoadingIcon(false);
 }
