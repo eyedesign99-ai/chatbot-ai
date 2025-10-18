@@ -31,7 +31,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return "<h2>🚀 Chatbot FAISS + OpenAI đang hoạt động!</h2><p>Dùng endpoint POST /chat để gửi tin nhắn.</p>"
+    return render_template("index.html")
 
 # -----------------------------------------------
 # FAISS SEARCH - xử lý tìm kiếm nội bộ
