@@ -10,10 +10,9 @@ body {
     background: white;
     border-radius: 0px;
     padding: 0px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
 }
 .chat-box {
-    height: 450px;
+    height: 400px;
     overflow-y: auto;
     border: 1px solid #ffffff;
     padding: 15px;
