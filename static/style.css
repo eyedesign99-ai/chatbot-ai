@@ -9,13 +9,13 @@ body {
     margin: auto;
     background: white;
     border-radius: 0px;
-    padding: 0px;
+    padding: 3px;
 }
 .chat-box {
     height: 450px;
     overflow-y: auto;
     border: 1px solid #ffffff;
-    padding: 5px;
+    padding: 0px;
     background-color: #ffffff;
     margin-bottom: 15px;
     border-radius: 8px;
@@ -71,7 +71,7 @@ button:hover {
     padding: 10px 14px;
     margin: 6px 0;
     display: inline-block;
-    max-width: 85%;
+    max-width: 90%;
     word-wrap: break-word;
 }
 
