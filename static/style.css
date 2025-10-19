@@ -66,12 +66,12 @@ button:hover {
 }
 
 .chat-bubble {
-    background-color: #e0e0e0;
+    background-color: #0f4bbd;
     border-radius: 20px;
     padding: 10px 14px;
     margin: 6px 0;
     display: inline-block;
-    max-width: 89%;
+    max-width: 85%;
     word-wrap: break-word;
 }
 
