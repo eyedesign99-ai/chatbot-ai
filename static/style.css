@@ -66,7 +66,7 @@ button:hover {
 }
 
 .chat-bubble {
-    background-color: #ffffff;
+    background-color: #e0e0e0;
     border-radius: 12px;
     padding: 10px 14px;
     margin: 6px 0;
@@ -76,7 +76,7 @@ button:hover {
 }
 
 .chat-bubble.user {
-    background-color: #ffffff;
+    background-color: #badbfa;
     border-radius: 12px;
     padding: 10px 14px;
     margin: 6px 0;
