@@ -12,7 +12,7 @@ body {
     padding: 0px;
 }
 .chat-box {
-    height: 370px;
+    height: 350px;
     overflow-y: auto;
     border: 1px solid #ffffff;
     padding: 5px;
