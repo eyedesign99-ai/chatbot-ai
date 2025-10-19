@@ -12,7 +12,7 @@ body {
     padding: 0px;
 }
 .chat-box {
-    height: 400px;
+    height: 370px;
     overflow-y: auto;
     border: 1px solid #ffffff;
     padding: 5px;
@@ -81,7 +81,7 @@ button:hover {
     padding: 10px 14px;
     margin: 6px 0;
     display: inline-block;
-    max-width: 69%;
+    max-width: 70%;
     word-wrap: break-word;
     align-self: flex-end;
     float: right;
