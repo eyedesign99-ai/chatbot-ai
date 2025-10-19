@@ -67,17 +67,17 @@ button:hover {
 
 .chat-bubble {
     background-color: #e0e0e0;
-    border-radius: 17px;
+    border-radius: 20px;
     padding: 10px 14px;
     margin: 6px 0;
     display: inline-block;
-    max-width: 90%;
+    max-width: 89%;
     word-wrap: break-word;
 }
 
 .chat-bubble.user {
-    background-color: #d4d4d4;
-    border-radius: 12px;
+    background-color: #ececec;
+    border-radius: 20px;
     padding: 10px 14px;
     margin: 6px 0;
     display: inline-block;
