@@ -57,7 +57,7 @@ def log_chat(user_input, bot_reply):
 def query_server(user_input):
     url = "http://127.0.0.1:5000/search"
     headers = {"Content-Type": "application/json"}
-    data = {"query": user_input, "limit": 20}  # ✅ hiển thị 20 sản phẩm nếu có
+    data = {"query": user_input, "limit": 20}  # hiển thị 20 sản phẩm nếu có
     try:
         response = requests.post(url, json=data, headers=headers)
         if response.status_code == 200:
@@ -71,42 +71,42 @@ def query_server(user_input):
 
 # --- Chuẩn hóa dữ liệu sản phẩm ---
 def enrich_product_data(context_list):
+    enriched = []
     for item in context_list:
         if isinstance(item, dict) and "hình_ảnh" in item and "id" in item:
             img_path = item["hình_ảnh"]
             sp_id = item["id"]
+            ten_sp = item.get("tên", "Tranh chưa có tên")
             img_id = sp_id.split("-")[1] if "-" in sp_id else sp_id
-            item["hinh_html"] = f"<img src='https://cgi.vn/image/{img_path}' style='max-width:100%; border-radius:10px; margin-bottom:6px;'>"
-            item["ten_html"] = f"<b>{item.get('tên', 'Tranh chưa có tên')}</b><br>"
-            item["link_ar"] = f"<a href='https://cgi.vn/ar/{img_id}' target='_blank'>Xem AR</a>"
-            item["link_chi_tiet"] = f"<a href='https://cgi.vn/san-pham/{img_id}' target='_blank'>Xem Chi Tiết</a>"
-    return context_list
+
+            # ✅ Bọc mỗi sản phẩm trong 1 div riêng
+            sanpham_html = f"""
+            <div class='sanpham'>
+                <img src='https://cgi.vn/image/{img_path}' alt='{ten_sp}' style='width:100%; border-radius:10px; margin-bottom:6px;'>
+                <b>{ten_sp}</b><br>
+                <a href='https://cgi.vn/ar/{img_id}' target='_blank'>Xem AR</a> |
+                <a href='https://cgi.vn/san-pham/{img_id}' target='_blank'>Xem Chi Tiết</a>
+            </div>
+            """
+            enriched.append(sanpham_html)
+    return enriched
 
 # --- Prompt bán hàng ---
 system_prompt = """
 Bạn là nhân viên bán tranh chuyên nghiệp của CGI.
-
-QUY TẮC TRẢ LỜI:
-- Khi khách hỏi mua tranh, chỉ trả lời ngắn gọn 1-2 câu, ví dụ:
-  "Dưới đây là các mẫu tranh phù hợp với bạn:"
-- Sau đó liệt kê danh sách sản phẩm trong dữ liệu đầu vào.
-- Mỗi sản phẩm hiển thị theo định dạng:
-  <img ...>
-  <b>Tên tranh</b><br>
-  <a href='link_ar'>Xem AR</a> | <a href='link_chi_tiet'>Xem Chi Tiết</a><br><br>
-- Giữ nguyên hình ảnh gốc trong dữ liệu.
-- Hiển thị tất cả sản phẩm (tối đa 20).
-- Không viết thêm mô tả phong thủy, lời khuyên hay giới thiệu dài dòng.
+Trả lời thật ngắn gọn khi khách hỏi (1-2 câu, ví dụ: “Dưới đây là các mẫu tranh phù hợp với bạn:”).
+Không mô tả phong thủy hay giải thích thêm.
+Phần danh sách sản phẩm sẽ được tự động hiển thị phía sau.
 """
 
 # --- Gửi câu hỏi tới OpenAI ---
 def query_openai_with_context(context_list, user_input):
-    context_list = enrich_product_data(context_list)
-    context_text = json.dumps(context_list, ensure_ascii=False, indent=2)
+    enriched_html_blocks = enrich_product_data(context_list)
+    html_output = "\n".join(enriched_html_blocks)
 
     messages = [
         {"role": "system", "content": system_prompt},
-        {"role": "user", "content": f"Khách hỏi: {user_input}\n\nDữ liệu sản phẩm:\n{context_text}"}
+        {"role": "user", "content": f"Khách hỏi: {user_input}"}
     ]
 
     response = client.chat.completions.create(
@@ -115,7 +115,8 @@ def query_openai_with_context(context_list, user_input):
         temperature=0.6
     )
 
-    return response.choices[0].message.content
+    gpt_text = response.choices[0].message.content
+    return f"{gpt_text}<div class='gallery'>{html_output}</div>"
 
 # --- Chạy chatbot ---
 def chatbot():
