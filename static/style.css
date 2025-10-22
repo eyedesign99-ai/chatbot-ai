@@ -179,17 +179,25 @@ img.fade-in.show {
 }
 
 /* ============================== */
-/*   Giao diện chatbot riêng cho WP */
+/*  Fix hiển thị 2 cột trên Render / WP */
 /* ============================== */
+
+.bot-message {
+    width: 100%;
+    display: block;
+    clear: both;
+}
 
 .chatbot-gallery {
     display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 12px !important;
     margin-top: 10px !important;
+    align-items: start;
+    justify-content: center;
 }
 
-.chatbot-item {
+.chatbot-gallery .sanpham {
     background: #ffffff;
     border-radius: 10px;
     text-align: center;
@@ -198,22 +206,14 @@ img.fade-in.show {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.chatbot-item:hover {
+.chatbot-gallery .sanpham img {
+    width: 100%;
+    border-radius: 10px;
+    display: block;
+}
+
+.chatbot-gallery .sanpham:hover {
     transform: translateY(-2px);
     box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
 }
 
-.chatbot-item img {
-    width: 100%;
-    border-radius: 10px;
-}
-
-.chatbot-item a {
-    color: #0f4bbd;
-    font-size: 14px;
-    text-decoration: none;
-}
-
-.chatbot-item a:hover {
-    text-decoration: underline;
-}
