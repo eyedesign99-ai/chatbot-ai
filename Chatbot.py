@@ -76,7 +76,16 @@ def enrich_product_data(context_list):
         if isinstance(item, dict) and "hình_ảnh" in item and "id" in item:
             img_path = item["hình_ảnh"]
             sp_id = item["id"]
-            ten_sp = item.get("tên", "Tranh chưa có tên")
+
+            # ✅ Tự động tìm khóa chứa tên
+            ten_sp = None
+            for key in item.keys():
+                if "ten" in key.lower() or "name" in key.lower() or "title" in key.lower():
+                    ten_sp = item[key]
+                    break
+            if not ten_sp:
+                ten_sp = "Tranh chưa có tên"
+
             img_id = sp_id.split("-")[1] if "-" in sp_id else sp_id
 
             sanpham_html = f"""
