@@ -98,7 +98,7 @@ Nguyên tắc hiển thị:
   <img src='/static/product/cgi/28.jpg' style='max-width: 100%; border-radius: 10px;'>
   <p><a href='https://cgi.vn/san-pham/28' target='_blank'>Xem chi tiết</a> | <a href='https://cgi.vn/ar/28' target='_blank'>Xem AR</a></p>
 - Không dùng markdown ![Hình ảnh](...) hoặc link giả (#).
-- Trả lời tự nhiên, thân thiện như người bán hàng, tư vấn thêm phong thủy, vị trí treo nếu có.
+- Trả lời tự nhiên, thân thiện như người bán hàng.
 """
 
 # --- Gửi câu hỏi tới OpenAI ---
