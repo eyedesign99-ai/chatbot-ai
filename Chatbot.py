@@ -121,11 +121,16 @@ def query_openai_with_context(context_list, user_input):
 
     gpt_text = response.choices[0].message.content
 
+    # ✅ Làm sạch mọi thẻ <div class='sanpham'> do GPT sinh ra sai chỗ
+    import re
+    gpt_text = re.sub(r"<div class=['\"]sanpham['\"]>.*?</div>", "", gpt_text, flags=re.DOTALL)
     gpt_text = gpt_text.replace("<div class='sanpham'>", "")
     gpt_text = gpt_text.replace("</div>", "")
 
+    # ✅ Bọc toàn bộ sản phẩm trong .gallery để CSS hoạt động đúng cho tất cả ảnh
     full_html = f"{gpt_text.strip()}<div class='gallery'>{html_output}</div>"
     return full_html
+
 
 # --- Chạy chatbot ---
 def chatbot():
