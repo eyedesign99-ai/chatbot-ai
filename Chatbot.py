@@ -76,22 +76,11 @@ def enrich_product_data(context_list):
         if isinstance(item, dict) and "hình_ảnh" in item and "id" in item:
             img_path = item["hình_ảnh"]
             sp_id = item["id"]
-
-            # ✅ Tự động tìm khóa chứa tên
-            ten_sp = None
-            for key in item.keys():
-                if "ten" in key.lower() or "name" in key.lower() or "title" in key.lower():
-                    ten_sp = item[key]
-                    break
-            if not ten_sp:
-                ten_sp = "Tranh chưa có tên"
-
             img_id = sp_id.split("-")[1] if "-" in sp_id else sp_id
 
             sanpham_html = f"""
             <div class='sanpham'>
-                <img src='https://cgi.vn/image/{img_path}' alt='{ten_sp}' style='width:100%; border-radius:10px; margin-bottom:6px;'>
-                <b>{ten_sp}</b><br>
+                <img src='https://cgi.vn/image/{img_path}' alt='tranh {img_id}' style='width:100%; border-radius:10px; margin-bottom:6px;'>
                 <a href='https://cgi.vn/ar/{img_id}' target='_blank'>Xem AR</a> |
                 <a href='https://cgi.vn/san-pham/{img_id}' target='_blank'>Xem Chi Tiết</a>
             </div>
@@ -105,17 +94,12 @@ Bạn là nhân viên bán tranh chuyên nghiệp của CGI.
 
 YÊU CẦU HIỂN THỊ:
 - Khi khách hỏi mua tranh, chỉ trả lời ngắn gọn 1–2 câu (ví dụ: “Dưới đây là các mẫu tranh phù hợp với bạn:”).
-- KHÔNG sử dụng markdown (không dùng ![], (), **, hoặc []()).
-- Mỗi sản phẩm phải được hiển thị đúng định dạng HTML như sau:
-
-<div class='sanpham'>
-  <img src='https://cgi.vn/image/abc.jpg' alt='Tên tranh' style='width:100%; border-radius:10px; margin-bottom:6px;'>
-  <b>Tên tranh</b><br>
+- KHÔNG sử dụng markdown (![], (), **, []()).
+- Mỗi sản phẩm chỉ hiển thị hình ảnh + link AR + link Xem Chi Tiết.
+- Ví dụ hiển thị:
+  <img src='https://cgi.vn/image/abc.jpg' alt='Ảnh tranh'>
   <a href='https://cgi.vn/ar/ID' target='_blank'>Xem AR</a> |
   <a href='https://cgi.vn/san-pham/ID' target='_blank'>Xem Chi Tiết</a>
-</div>
-
-- Sau khi hiển thị các sản phẩm, không viết thêm gì khác.
 - Toàn bộ câu trả lời phải là HTML hợp lệ để hiển thị trực tiếp trong trình duyệt.
 """
 
@@ -137,15 +121,11 @@ def query_openai_with_context(context_list, user_input):
 
     gpt_text = response.choices[0].message.content
 
-    # ✅ Loại bỏ mọi thẻ <div> mở sai vị trí do GPT tạo ra
     gpt_text = gpt_text.replace("<div class='sanpham'>", "")
     gpt_text = gpt_text.replace("</div>", "")
 
-    # ✅ Bọc toàn bộ sản phẩm trong .gallery để CSS 2 cột hoạt động ổn định
     full_html = f"{gpt_text.strip()}<div class='gallery'>{html_output}</div>"
     return full_html
-
-
 
 # --- Chạy chatbot ---
 def chatbot():
