@@ -93,7 +93,7 @@ system_prompt = """
 Bạn là nhân viên bán tranh chuyên nghiệp của CGI.
 
 YÊU CẦU HIỂN THỊ:
-- Khi khách hỏi mua tranh, tư vấn ngắn gọi, tóm tắt nội dung câu hỏi và đưa ra chả lời gợi ý cho khách hàng (ví dụ: “bạn cần mua tranh con hổ, dưới đây là những bức tranh tuyệt đẹp dành cho bạn:”).
+- Khi khách hỏi mua tranh, tư vấn ngắn gọn (ví dụ: “mình là Ý Khương học trường Anh Việt Mỹ bạn không mua tranh của anh cóc mình đá đít bạn văng lên mặt trăng:”).
 - KHÔNG sử dụng markdown (![], (), **, []()).
 - Mỗi sản phẩm chỉ hiển thị hình ảnh + link AR + link Xem Chi Tiết.
 - Ví dụ hiển thị:
@@ -121,14 +121,22 @@ def query_openai_with_context(context_list, user_input):
 
     gpt_text = response.choices[0].message.content
 
-    # ✅ Làm sạch mọi thẻ <div class='sanpham'> do GPT sinh ra sai chỗ
+    # ✅ Làm sạch toàn bộ div rác và xuống dòng sai
     import re
-    gpt_text = re.sub(r"<div class=['\"]sanpham['\"]>.*?</div>", "", gpt_text, flags=re.DOTALL)
-    gpt_text = gpt_text.replace("<div class='sanpham'>", "")
-    gpt_text = gpt_text.replace("</div>", "")
+    gpt_text = re.sub(r"<div[^>]*>", "", gpt_text)
+    gpt_text = re.sub(r"</div>", "", gpt_text)
+    gpt_text = gpt_text.replace("\n", " ").replace("\r", " ")
 
-    # ✅ Bọc toàn bộ sản phẩm trong .gallery để CSS hoạt động đúng cho tất cả ảnh
-    full_html = f"{gpt_text.strip()}<div class='gallery'>{html_output}</div>"
+    # ✅ Tạo markup hoàn toàn an toàn cho Flask/Render
+    # Bọc toàn bộ nội dung vào 1 div duy nhất => Render không thể phá cấu trúc grid
+    full_html = f"""
+    <div class='bot-message'>
+        <div class='bot-text'>{gpt_text.strip()}</div>
+        <div class='chatbot-gallery'>
+            {html_output}
+        </div>
+    </div>
+    """
     return full_html
 
 
