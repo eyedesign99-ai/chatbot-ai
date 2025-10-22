@@ -7,7 +7,13 @@
 </head>
 <body>
     <div class="container">
-        <div id="chat-box" class="chat-box"></div>
+        <div id="chat-box" class="chat-box">
+            {% if bot_reply %}
+                <div class="chat-bubble bot">
+                    {{ bot_reply | safe }}
+                </div>
+            {% endif %}
+        </div>
         <div class="input-area">
             <input type="text" id="user-input" placeholder="Bạn muốn mua tranh gì..." />
             <button onclick="sendMessage()" class="send-btn" aria-label="Gửi">
