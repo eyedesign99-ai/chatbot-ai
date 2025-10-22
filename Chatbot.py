@@ -126,7 +126,12 @@ def query_openai_with_context(context_list, user_input):
         temperature=0.5
     )
 
-    return response.choices[0].message.content
+    gpt_text = response.choices[0].message.content
+
+    # ✅ Thêm lớp bọc gallery để CSS 2 cột hoạt động
+    full_html = f"{gpt_text}<div class='gallery'>{html_output}</div>"
+    return full_html
+
 
 # --- Chạy chatbot ---
 def chatbot():
