@@ -56,11 +56,9 @@ button:hover {
     cursor: pointer;
     transition: background 0.3s ease;
 }
-
 .send-btn:hover {
     background-color: #000000;
 }
-
 .send-btn svg {
     pointer-events: none;
 }
@@ -74,7 +72,6 @@ button:hover {
     max-width: 90%;
     word-wrap: break-word;
 }
-
 .chat-bubble.user {
     background-color: #ececec;
     border-radius: 20px;
@@ -88,13 +85,11 @@ button:hover {
     text-align: right;
     clear: both;
 }
-
 .chat-row {
     display: flex;
     flex-direction: column;
     margin-bottom: 10px;
 }
-
 .chat-bubble.bot {
     background-color: #ffffff;
     border-radius: 12px;
@@ -109,7 +104,6 @@ button:hover {
     height: 30px;
     animation: spin 1s linear infinite;
 }
-
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
@@ -119,8 +113,69 @@ img.fade-in {
     opacity: 0;
     transition: opacity 1s ease-in-out;
 }
-
 img.fade-in.show {
     opacity: 1;
 }
 
+/* ============================== */
+/*   Giao diện hiển thị sản phẩm  */
+/* ============================== */
+
+/* ✅ Mỗi sản phẩm 1 cột */
+.gallery,
+.chatbot-gallery {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    margin-top: 10px !important;
+    align-items: center;
+}
+
+.sanpham {
+    background: #ffffff;
+    border-radius: 10px;
+    text-align: center;
+    padding: 8px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    width: 100%;
+}
+.sanpham:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+}
+.sanpham img {
+    width: 100%;
+    border-radius: 10px;
+    display: block;
+}
+
+/* ✅ Canh giữa phần link "Xem chi tiết" & "Xem AR" */
+.sanpham p {
+    margin-top: 6px;
+    margin-bottom: 0;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.sanpham a {
+    color: #0f4bbd;
+    font-size: 14px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+.sanpham a:hover {
+    color: #000;
+    transform: scale(1.05);
+}
+
+/* ============================== */
+/*  Fix hiển thị trên Render / WP */
+/* ============================== */
+.bot-message {
+    width: 100%;
+    display: block;
+    clear: both;
+}
