@@ -6,11 +6,9 @@ from openpyxl import Workbook, load_workbook
 from datetime import datetime
 import uuid
 
-
 # Cấu hình API Key của OpenAI
 openai.api_key = os.getenv("OPENAI_API_KEY")
 client = openai.OpenAI(api_key=openai.api_key)
-
 
 # --- Tải dữ liệu từ price.json ---
 price_path = os.path.join(os.path.dirname(__file__), "information", "price.json")
@@ -53,7 +51,6 @@ def log_chat(user_input, bot_reply):
 
     current_time = datetime.now().strftime("%H:%M:%S")
     ws.append([session_id, current_time, user_input, bot_reply])
-
     wb.save(log_file)
 
 # --- Gửi truy vấn đến FAISS server ---
@@ -79,8 +76,17 @@ def enrich_product_data(context_list):
             img_path = item["hình_ảnh"]
             sp_id = item["id"]
             img_id = sp_id.split("-")[1] if "-" in sp_id else sp_id
-            item["hinh_html"] = f"<img src='https://cgi.vn/image/{img_path}' style='max-width:100%; border-radius:10px;'>"
-            item["link_html"] = f"<p><a href='https://cgi.vn/san-pham/{img_id}' target='_blank'>Xem chi tiết sản phẩm</a></p>"
+
+            # ✅ Bổ sung link xem chi tiết + xem AR
+            item["hinh_html"] = f"""
+                <div class='sanpham'>
+                    <img src='https://cgi.vn/image/{img_path}' style='max-width:100%; border-radius:10px;'>
+                    <p>
+                        <a href='https://cgi.vn/san-pham/{img_id}' target='_blank'>Xem chi tiết</a> |
+                        <a href='https://cgi.vn/ar/{img_id}' target='_blank'>Xem AR</a>
+                    </p>
+                </div>
+            """
     return context_list
 
 # --- Prompt bán hàng ---
@@ -90,7 +96,7 @@ Nguyên tắc hiển thị:
 - LUÔN sử dụng đúng đường dẫn hình ảnh và link sản phẩm có sẵn trong dữ liệu.
 - Hình ảnh hiển thị theo dạng HTML, ví dụ:
   <img src='/static/product/cgi/28.jpg' style='max-width: 100%; border-radius: 10px;'>
-  <p><a href='https://cgi.vn/san-pham/28' target='_blank'>Xem chi tiết sản phẩm</a></p>
+  <p><a href='https://cgi.vn/san-pham/28' target='_blank'>Xem chi tiết</a> | <a href='https://cgi.vn/ar/28' target='_blank'>Xem AR</a></p>
 - Không dùng markdown ![Hình ảnh](...) hoặc link giả (#).
 - Trả lời tự nhiên, thân thiện như người bán hàng, tư vấn thêm phong thủy, vị trí treo nếu có.
 """
@@ -111,7 +117,9 @@ def query_openai_with_context(context_list, user_input):
         temperature=0.7
     )
 
-    return response.choices[0].message.content
+    reply = response.choices[0].message.content
+    reply = reply.replace("&lt;", "<").replace("&gt;", ">")  # tránh escape HTML
+    return reply
 
 # --- Chạy chatbot ---
 def chatbot():
