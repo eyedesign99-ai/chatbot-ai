@@ -96,7 +96,7 @@ Nguyên tắc hiển thị:
 - LUÔN sử dụng đúng đường dẫn hình ảnh và link sản phẩm có sẵn trong dữ liệu.
 - Hình ảnh hiển thị theo dạng HTML, ví dụ:
   <img src='/static/product/cgi/28.jpg' style='max-width: 100%; border-radius: 10px;'>
-  <p><a href='https://cgi.vn/san-pham/28' target='_blank'>Xem chi tiết</a> | <a href='https://cgi.vn/ar/28' target='_blank'>Xem AR</a></p>
+  <p><a href='https://cgi.vn/ar/28' target='_blank'>Xem AR</a> | <a href='https://cgi.vn/san-pham/28' target='_blank'>Xem chi tiết</a></p>
 - Không dùng markdown ![Hình ảnh](...) hoặc link giả (#).
 - Trả lời tự nhiên, thân thiện như người bán hàng.
 """
