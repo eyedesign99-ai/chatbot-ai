@@ -145,7 +145,7 @@ img.fade-in.show {
     box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
 }
 .sanpham img {
-    width: 100%;
+    width: 90%;
     border-radius: 10px;
     display: block;
 }
