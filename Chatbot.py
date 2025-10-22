@@ -137,9 +137,14 @@ def query_openai_with_context(context_list, user_input):
 
     gpt_text = response.choices[0].message.content
 
-    # ✅ Thêm lớp bọc gallery để CSS 2 cột hoạt động
-    full_html = f"{gpt_text}<div class='gallery'>{html_output}</div>"
+    # ✅ Loại bỏ mọi thẻ <div> mở sai vị trí do GPT tạo ra
+    gpt_text = gpt_text.replace("<div class='sanpham'>", "")
+    gpt_text = gpt_text.replace("</div>", "")
+
+    # ✅ Bọc toàn bộ sản phẩm trong .gallery để CSS 2 cột hoạt động ổn định
+    full_html = f"{gpt_text.strip()}<div class='gallery'>{html_output}</div>"
     return full_html
+
 
 
 # --- Chạy chatbot ---
