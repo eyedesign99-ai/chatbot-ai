@@ -5,7 +5,6 @@ import os
 from openpyxl import Workbook, load_workbook
 from datetime import datetime
 import uuid
-import re
 
 # --- Cấu hình API Key ---
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -80,7 +79,7 @@ def enrich_product_data(context_list):
             img_id = sp_id.split("-")[1] if "-" in sp_id else sp_id
 
             sanpham_html = f"""
-            <div class='chatbot-item'>
+            <div class='sanpham'>
                 <img src='https://cgi.vn/image/{img_path}' alt='tranh {img_id}' style='width:100%; border-radius:10px; margin-bottom:6px;'>
                 <a href='https://cgi.vn/ar/{img_id}' target='_blank'>Xem AR</a> |
                 <a href='https://cgi.vn/san-pham/{img_id}' target='_blank'>Xem Chi Tiết</a>
@@ -94,9 +93,13 @@ system_prompt = """
 Bạn là nhân viên bán tranh chuyên nghiệp của CGI.
 
 YÊU CẦU HIỂN THỊ:
-- Khi khách hỏi mua tranh, chỉ trả lời ngắn gọn 1–2 câu (ví dụ: “Dưới đây là các mẫu tranh phù hợp với bạn:”).
+- Khi khách hỏi mua tranh, tư vấn ngắn gọi, tóm tắt nội dung câu hỏi và đưa ra chả lời gợi ý cho khách hàng (ví dụ: “bạn cần mua tranh con hổ, dưới đây là những bức tranh tuyệt đẹp dành cho bạn:”).
 - KHÔNG sử dụng markdown (![], (), **, []()).
 - Mỗi sản phẩm chỉ hiển thị hình ảnh + link AR + link Xem Chi Tiết.
+- Ví dụ hiển thị:
+  <img src='https://cgi.vn/image/abc.jpg' alt='Ảnh tranh'>
+  <a href='https://cgi.vn/ar/ID' target='_blank'>Xem AR</a> |
+  <a href='https://cgi.vn/san-pham/ID' target='_blank'>Xem Chi Tiết</a>
 - Toàn bộ câu trả lời phải là HTML hợp lệ để hiển thị trực tiếp trong trình duyệt.
 """
 
@@ -118,15 +121,24 @@ def query_openai_with_context(context_list, user_input):
 
     gpt_text = response.choices[0].message.content
 
-    # ✅ Xóa mọi div sai vị trí GPT sinh ra
-    gpt_text = re.sub(r"<div class=['"]sanpham['"]>.*?</div>", "", gpt_text, flags=re.DOTALL)
-    gpt_text = re.sub(r"<div class=['"]gallery['"]>.*?</div>", "", gpt_text, flags=re.DOTALL)
-    gpt_text = gpt_text.replace("<div class='sanpham'>", "").replace("</div>", "")
-    gpt_text = gpt_text.replace("<div>", "").replace("</div>", "")
+    # ✅ Làm sạch toàn bộ div rác và xuống dòng sai
+    import re
+    gpt_text = re.sub(r"<div[^>]*>", "", gpt_text)
+    gpt_text = re.sub(r"</div>", "", gpt_text)
+    gpt_text = gpt_text.replace("\n", " ").replace("\r", " ")
 
-    # ✅ Tạo khối gallery bao trọn danh sách sản phẩm
-    full_html = f"<div class='bot-text'>{gpt_text.strip()}</div><div class='chatbot-gallery'>{html_output}</div>"
+    # ✅ Tạo markup hoàn toàn an toàn cho Flask/Render
+    # Bọc toàn bộ nội dung vào 1 div duy nhất => Render không thể phá cấu trúc grid
+    full_html = f"""
+    <div class='bot-message'>
+        <div class='bot-text'>{gpt_text.strip()}</div>
+        <div class='chatbot-gallery'>
+            {html_output}
+        </div>
+    </div>
+    """
     return full_html
+
 
 # --- Chạy chatbot ---
 def chatbot():
