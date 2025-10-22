@@ -124,3 +124,49 @@ img.fade-in.show {
     opacity: 1;
 }
 
+/* ============================== */
+/*   Giao diện hiển thị sản phẩm  */
+/* ============================== */
+
+.gallery {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 cột */
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.sanpham {
+    background: #ffffff;
+    border-radius: 10px;
+    text-align: center;
+    padding: 6px;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sanpham:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+}
+
+.sanpham img {
+    width: 100%;
+    border-radius: 10px;
+}
+
+.sanpham b {
+    display: block;
+    margin-top: 6px;
+    font-size: 15px;
+    color: #111;
+}
+
+.sanpham a {
+    color: #0f4bbd;
+    font-size: 14px;
+    text-decoration: none;
+}
+
+.sanpham a:hover {
+    text-decoration: underline;
+}
