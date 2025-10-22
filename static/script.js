@@ -52,43 +52,34 @@ function typeResponse(sender, message) {
     const bubble = document.createElement("div");
     bubble.className = "chat-bubble bot";
 
-    const typingSpan = document.createElement("span");
-    typingSpan.setAttribute("id", "typing-text");
+    // ✅ Phân tách phần text mô tả và phần HTML sản phẩm
+    const splitIndex = message.indexOf("<div");
+    const textPart = splitIndex > -1 ? message.substring(0, splitIndex) : message;
+    const htmlPart = splitIndex > -1 ? message.substring(splitIndex) : "";
 
-    // Tách phần text và phần HTML (sau cùng)
-    const parts = message.split(/(<img.*?>|<a.*?<\/a>|<p.*?<\/p>)/gi);
-    const textPart = parts[0];
-    const htmlParts = parts.slice(1).join("");
-
-    bubble.innerHTML = `<strong>${displayName}:</strong> `;
-    bubble.appendChild(typingSpan);
+    // ✅ Hiển thị phần text trước
+    bubble.innerHTML = `<strong>${displayName}:</strong> <span id="typing-text"></span>`;
     div.appendChild(bubble);
     box.appendChild(div);
     box.scrollTop = box.scrollHeight;
 
-    let index = 0;
+    let i = 0;
+    const typingSpan = bubble.querySelector("#typing-text");
+
     const interval = setInterval(() => {
-        if (index < textPart.length) {
-            typingSpan.innerHTML += textPart.charAt(index);
-            box.scrollTop = box.scrollHeight;
-            index++;
+        if (i < textPart.length) {
+            typingSpan.innerHTML += textPart.charAt(i);
+            i++;
         } else {
             clearInterval(interval);
-            if (htmlParts) {
-                const temp = document.createElement("div");
-                temp.innerHTML = htmlParts;
-                const imgs = temp.querySelectorAll("img");
-
-                imgs.forEach(img => {
-                    img.classList.add("fade-in");
-                    img.onload = () => {
-                        img.classList.add("show");
-                    };
-                });
-
-                bubble.appendChild(temp);
+            // ✅ Chèn phần HTML (sản phẩm)
+            if (htmlPart) {
+                const tempDiv = document.createElement("div");
+                tempDiv.innerHTML = htmlPart;
+                bubble.insertAdjacentElement("afterend", tempDiv); // ✅ đặt ngoài bubble
                 box.scrollTop = box.scrollHeight;
             }
         }
     }, 10);
 }
+
