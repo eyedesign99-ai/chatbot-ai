@@ -6,13 +6,11 @@ from openpyxl import Workbook, load_workbook
 from datetime import datetime
 import uuid
 
-
-# Cấu hình API Key của OpenAI
+# --- Cấu hình API Key ---
 openai.api_key = os.getenv("OPENAI_API_KEY")
 client = openai.OpenAI(api_key=openai.api_key)
 
-
-# --- Tải dữ liệu từ price.json ---
+# --- Nạp dữ liệu giá ---
 price_path = os.path.join(os.path.dirname(__file__), "information", "price.json")
 try:
     with open(price_path, "r", encoding="utf-8") as f:
@@ -22,7 +20,7 @@ except FileNotFoundError:
     ty_le_khung_data = {}
     print(f"❌ Không tìm thấy file: {price_path}")
 
-# --- Thêm file tri thức phong thủy ---
+# --- Nạp dữ liệu phong thủy ---
 phong_thuy_path = os.path.join(os.path.dirname(__file__), "information", "phong_thuy.json")
 thong_tin_chung = {}
 try:
@@ -35,7 +33,7 @@ except FileNotFoundError:
 # --- Sinh ID phiên chat ---
 session_id = str(uuid.uuid4())[:8]
 
-# --- Ghi log chat vào Excel ---
+# --- Ghi log ---
 def log_chat(user_input, bot_reply):
     log_dir = os.path.join(os.path.dirname(__file__), "logs")
     os.makedirs(log_dir, exist_ok=True)
@@ -53,65 +51,86 @@ def log_chat(user_input, bot_reply):
 
     current_time = datetime.now().strftime("%H:%M:%S")
     ws.append([session_id, current_time, user_input, bot_reply])
-
     wb.save(log_file)
 
-# --- Gửi truy vấn đến FAISS server ---
+# --- Gửi truy vấn FAISS server ---
 def query_server(user_input):
     url = "http://127.0.0.1:5000/search"
     headers = {"Content-Type": "application/json"}
-    data = {"query": user_input}
+    data = {"query": user_input, "limit": 20}
     try:
         response = requests.post(url, json=data, headers=headers)
         if response.status_code == 200:
             return response.json()
         else:
-            print("❌ Server trả về lỗi:", response.text)
+            print("❌ Lỗi server:", response.text)
             return None
     except requests.exceptions.ConnectionError as e:
         print("❌ Không kết nối được đến Flask server:", e)
         return None
 
-# --- Chuẩn hóa dữ liệu sản phẩm: thêm hình_html và link_html ---
+# --- Chuẩn hóa dữ liệu sản phẩm ---
 def enrich_product_data(context_list):
+    enriched = []
     for item in context_list:
         if isinstance(item, dict) and "hình_ảnh" in item and "id" in item:
             img_path = item["hình_ảnh"]
             sp_id = item["id"]
             img_id = sp_id.split("-")[1] if "-" in sp_id else sp_id
-            item["hinh_html"] = f"<img src='https://cgi.vn/image/{img_path}' style='max-width:100%; border-radius:10px;'>"
-            item["link_html"] = f"<p><a href='https://cgi.vn/san-pham/{img_id}' target='_blank'>Xem chi tiết sản phẩm</a></p>"
-    return context_list
+
+            sanpham_html = f"""
+            <div class='sanpham'>
+                <img src='https://cgi.vn/image/{img_path}' alt='tranh {img_id}' style='width:100%; border-radius:10px; margin-bottom:6px;'>
+                <a href='https://cgi.vn/ar/{img_id}' target='_blank'>Xem AR</a> |
+                <a href='https://cgi.vn/san-pham/{img_id}' target='_blank'>Xem Chi Tiết</a>
+            </div>
+            """
+            enriched.append(sanpham_html)
+    return enriched
 
 # --- Prompt bán hàng ---
 system_prompt = """
-Bạn là một nhân viên bán tranh chuyên nghiệp. 
-Nguyên tắc hiển thị:
-- LUÔN sử dụng đúng đường dẫn hình ảnh và link sản phẩm có sẵn trong dữ liệu.
-- Hình ảnh hiển thị theo dạng HTML, ví dụ:
-  <img src='/static/product/cgi/28.jpg' style='max-width: 100%; border-radius: 10px;'>
-  <p><a href='https://cgi.vn/san-pham/28' target='_blank'>Xem chi tiết sản phẩm</a></p>
-- Không dùng markdown ![Hình ảnh](...) hoặc link giả (#).
-- Trả lời tự nhiên, thân thiện như người bán hàng, tư vấn thêm phong thủy, vị trí treo nếu có.
+Bạn là nhân viên bán tranh chuyên nghiệp của CGI.
+
+YÊU CẦU HIỂN THỊ:
+- Khi khách hỏi mua tranh, tư vấn ngắn gọi, tóm tắt nội dung câu hỏi và đưa ra chả lời gợi ý cho khách hàng (ví dụ: “bạn cần mua tranh con hổ, dưới đây là những bức tranh tuyệt đẹp dành cho bạn:”).
+- KHÔNG sử dụng markdown (![], (), **, []()).
+- Mỗi sản phẩm chỉ hiển thị hình ảnh + link AR + link Xem Chi Tiết.
+- Ví dụ hiển thị:
+  <img src='https://cgi.vn/image/abc.jpg' alt='Ảnh tranh'>
+  <a href='https://cgi.vn/ar/ID' target='_blank'>Xem AR</a> |
+  <a href='https://cgi.vn/san-pham/ID' target='_blank'>Xem Chi Tiết</a>
+- Toàn bộ câu trả lời phải là HTML hợp lệ để hiển thị trực tiếp trong trình duyệt.
 """
 
 # --- Gửi câu hỏi tới OpenAI ---
 def query_openai_with_context(context_list, user_input):
-    context_list = enrich_product_data(context_list)
-    context_text = json.dumps(context_list, ensure_ascii=False, indent=2)
+    enriched_html_blocks = enrich_product_data(context_list)
+    html_output = "\n".join(enriched_html_blocks)
 
     messages = [
         {"role": "system", "content": system_prompt},
-        {"role": "user", "content": f"Khách hỏi: {user_input}\n\nDữ liệu sản phẩm:\n{context_text}"}
+        {"role": "user", "content": f"Khách hỏi: {user_input}\nHãy viết câu trả lời HTML ngắn gọn và chèn danh sách sản phẩm sau đây vào cuối:\n{html_output}"}
     ]
 
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=messages,
-        temperature=0.7
+        temperature=0.5
     )
 
-    return response.choices[0].message.content
+    gpt_text = response.choices[0].message.content
+
+    # ✅ Làm sạch mọi thẻ <div class='sanpham'> do GPT sinh ra sai chỗ
+    import re
+    gpt_text = re.sub(r"<div class=['\"]sanpham['\"]>.*?</div>", "", gpt_text, flags=re.DOTALL)
+    gpt_text = gpt_text.replace("<div class='sanpham'>", "")
+    gpt_text = gpt_text.replace("</div>", "")
+
+    # ✅ Bọc toàn bộ sản phẩm trong .gallery để CSS hoạt động đúng cho tất cả ảnh
+    full_html = f"{gpt_text.strip()}<div class='gallery'>{html_output}</div>"
+    return full_html
+
 
 # --- Chạy chatbot ---
 def chatbot():
