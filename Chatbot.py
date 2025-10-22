@@ -57,7 +57,7 @@ def log_chat(user_input, bot_reply):
 def query_server(user_input):
     url = "http://127.0.0.1:5000/search"
     headers = {"Content-Type": "application/json"}
-    data = {"query": user_input, "limit": 20}  # hiển thị 20 sản phẩm nếu có
+    data = {"query": user_input, "limit": 20}
     try:
         response = requests.post(url, json=data, headers=headers)
         if response.status_code == 200:
@@ -79,7 +79,6 @@ def enrich_product_data(context_list):
             ten_sp = item.get("tên", "Tranh chưa có tên")
             img_id = sp_id.split("-")[1] if "-" in sp_id else sp_id
 
-            # ✅ Bọc mỗi sản phẩm trong 1 div riêng
             sanpham_html = f"""
             <div class='sanpham'>
                 <img src='https://cgi.vn/image/{img_path}' alt='{ten_sp}' style='width:100%; border-radius:10px; margin-bottom:6px;'>
@@ -94,9 +93,21 @@ def enrich_product_data(context_list):
 # --- Prompt bán hàng ---
 system_prompt = """
 Bạn là nhân viên bán tranh chuyên nghiệp của CGI.
-Trả lời thật ngắn gọn khi khách hỏi (1-2 câu, ví dụ: “Dưới đây là các mẫu tranh phù hợp với bạn:”).
-Không mô tả phong thủy hay giải thích thêm.
-Phần danh sách sản phẩm sẽ được tự động hiển thị phía sau.
+
+YÊU CẦU HIỂN THỊ:
+- Khi khách hỏi mua tranh, chỉ trả lời ngắn gọn 1–2 câu (ví dụ: “Dưới đây là các mẫu tranh phù hợp với bạn:”).
+- KHÔNG sử dụng markdown (không dùng ![], (), **, hoặc []()).
+- Mỗi sản phẩm phải được hiển thị đúng định dạng HTML như sau:
+
+<div class='sanpham'>
+  <img src='https://cgi.vn/image/abc.jpg' alt='Tên tranh' style='width:100%; border-radius:10px; margin-bottom:6px;'>
+  <b>Tên tranh</b><br>
+  <a href='https://cgi.vn/ar/ID' target='_blank'>Xem AR</a> |
+  <a href='https://cgi.vn/san-pham/ID' target='_blank'>Xem Chi Tiết</a>
+</div>
+
+- Sau khi hiển thị các sản phẩm, không viết thêm gì khác.
+- Toàn bộ câu trả lời phải là HTML hợp lệ để hiển thị trực tiếp trong trình duyệt.
 """
 
 # --- Gửi câu hỏi tới OpenAI ---
@@ -106,17 +117,16 @@ def query_openai_with_context(context_list, user_input):
 
     messages = [
         {"role": "system", "content": system_prompt},
-        {"role": "user", "content": f"Khách hỏi: {user_input}"}
+        {"role": "user", "content": f"Khách hỏi: {user_input}\nHãy viết câu trả lời HTML ngắn gọn và chèn danh sách sản phẩm sau đây vào cuối:\n{html_output}"}
     ]
 
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=messages,
-        temperature=0.6
+        temperature=0.5
     )
 
-    gpt_text = response.choices[0].message.content
-    return f"{gpt_text}<div class='gallery'>{html_output}</div>"
+    return response.choices[0].message.content
 
 # --- Chạy chatbot ---
 def chatbot():
