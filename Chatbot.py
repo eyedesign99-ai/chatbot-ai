@@ -75,25 +75,36 @@ def query_server(user_input):
 # --- Chuẩn hóa dữ liệu sản phẩm: thêm hình_html và link_html ---
 def enrich_product_data(context_list):
     for item in context_list:
-        if isinstance(item, dict) and "hình_ảnh" in item and "id" in item:
-            img_path = item["hình_ảnh"]
+        if isinstance(item, dict) and "id" in item:
             sp_id = item["id"]
             img_id = sp_id.split("-")[1] if "-" in sp_id else sp_id
-            item["hinh_html"] = f"<img src='https://cgi.vn/image/{img_path}' style='max-width:100%; border-radius:10px;'>"
-            item["link_html"] = f"<p><a href='https://cgi.vn/san-pham/{img_id}' target='_blank'>Xem chi tiết sản phẩm</a></p>"
+            item["link_ar"] = f"https://cgi.vn/ar/{img_id}"
+            item["link_chi_tiet"] = f"https://cgi.vn/san-pham/{img_id}"
     return context_list
 
 # --- Prompt bán hàng ---
 system_prompt = """
-Bạn là một nhân viên bán tranh chuyên nghiệp. 
-Nguyên tắc hiển thị:
-- LUÔN sử dụng đúng đường dẫn hình ảnh và link sản phẩm có sẵn trong dữ liệu.
-- Hình ảnh hiển thị theo dạng HTML, ví dụ:
-  <img src='/static/product/cgi/28.jpg' style='max-width: 100%; border-radius: 10px;'>
-  <p><a href='https://cgi.vn/san-pham/28' target='_blank'>Xem chi tiết sản phẩm</a></p>
-- Không dùng markdown ![Hình ảnh](...) hoặc link giả (#).
-- Trả lời tự nhiên, thân thiện như người bán hàng, tư vấn thêm phong thủy, vị trí treo nếu có.
+Bạn là nhân viên bán tranh chuyên nghiệp của CGI.
+
+YÊU CẦU:
+- Khi khách hỏi mua tranh, chỉ trả lời ngắn gọn (1-2 câu), ví dụ: 
+  "Dưới đây là các mẫu tranh phù hợp với bạn:"
+- Sau câu mở đầu, liệt kê toàn bộ sản phẩm liên quan trong dữ liệu đầu vào.
+- Mỗi sản phẩm hiển thị đúng 3 thông tin:
+  1️⃣ Tên sản phẩm  
+  2️⃣ Link AR (nếu có)  
+  3️⃣ Link xem chi tiết sản phẩm  
+
+- Không hiển thị hình ảnh, mô tả phong thủy, hay đoạn tư vấn dài.
+- Mỗi sản phẩm nằm trên 1 khối riêng, có định dạng rõ ràng, ví dụ:
+
+<b>Tranh Hổ Rừng Xanh</b><br>
+<a href='https://cgi.vn/ar/123' target='_blank'>Xem AR</a> | 
+<a href='https://cgi.vn/san-pham/123' target='_blank'>Xem Chi Tiết</a><br><br>
+
+- Không viết thêm câu nào khác ngoài danh sách sản phẩm.
 """
+
 
 # --- Gửi câu hỏi tới OpenAI ---
 def query_openai_with_context(context_list, user_input):
