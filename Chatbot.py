@@ -80,7 +80,7 @@ def enrich_product_data(context_list):
             img_id = sp_id.split("-")[1] if "-" in sp_id else sp_id
 
             sanpham_html = f"""
-            <div class='sanpham'>
+            <div class='chatbot-item'>
                 <img src='https://cgi.vn/image/{img_path}' alt='tranh {img_id}' style='width:100%; border-radius:10px; margin-bottom:6px;'>
                 <a href='https://cgi.vn/ar/{img_id}' target='_blank'>Xem AR</a> |
                 <a href='https://cgi.vn/san-pham/{img_id}' target='_blank'>Xem Chi Tiết</a>
@@ -125,7 +125,7 @@ def query_openai_with_context(context_list, user_input):
     gpt_text = gpt_text.replace("<div>", "").replace("</div>", "")
 
     # ✅ Tạo khối gallery bao trọn danh sách sản phẩm
-    full_html = f"<div class='bot-text'>{gpt_text.strip()}</div><div class='gallery'>{html_output}</div>"
+    full_html = f"<div class='bot-text'>{gpt_text.strip()}</div><div class='chatbot-gallery'>{html_output}</div>"
     return full_html
 
 # --- Chạy chatbot ---
