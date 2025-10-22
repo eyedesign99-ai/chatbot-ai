@@ -16,6 +16,7 @@ async function sendMessage() {
 
     const data = await response.json();
 
+    // ✅ Gộp phần phản hồi văn bản và HTML (nếu có)
     typeResponse("Bot", `${data.response || ''}${data.hinh_html || ''}`);
 
     showLoadingIcon(false);
@@ -52,12 +53,12 @@ function typeResponse(sender, message) {
     const bubble = document.createElement("div");
     bubble.className = "chat-bubble bot";
 
-    // ✅ Phân tách phần text mô tả và phần HTML sản phẩm
-    const splitIndex = message.indexOf("<div");
+    // ✅ Nhận diện cả <div> và <img> trong nội dung
+    const splitIndex = message.search(/<div|<img/i);
     const textPart = splitIndex > -1 ? message.substring(0, splitIndex) : message;
     const htmlPart = splitIndex > -1 ? message.substring(splitIndex) : "";
 
-    // ✅ Hiển thị phần text trước
+    // ✅ Hiển thị phần văn bản (typing effect)
     bubble.innerHTML = `<strong>${displayName}:</strong> <span id="typing-text"></span>`;
     div.appendChild(bubble);
     box.appendChild(div);
@@ -72,14 +73,14 @@ function typeResponse(sender, message) {
             i++;
         } else {
             clearInterval(interval);
-            // ✅ Chèn phần HTML (sản phẩm)
+            // ✅ Hiển thị phần HTML sản phẩm (ảnh, link, v.v.)
             if (htmlPart) {
                 const tempDiv = document.createElement("div");
+                tempDiv.classList.add("bot-message"); // dùng CSS fix layout
                 tempDiv.innerHTML = htmlPart;
-                bubble.insertAdjacentElement("afterend", tempDiv); // ✅ đặt ngoài bubble
+                bubble.insertAdjacentElement("afterend", tempDiv);
                 box.scrollTop = box.scrollHeight;
             }
         }
     }, 10);
 }
-
