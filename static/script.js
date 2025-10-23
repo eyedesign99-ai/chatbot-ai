@@ -35,12 +35,28 @@ function appendMessage(sender, message){
 }
 
 function setLoading(val){
-    const btn = document.querySelector(".send-btn");
-    btn.innerHTML = val ? `<img src="/static/icon.png" class="loading-icon" alt="...">`
-                        : `<svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="white" viewBox="0 0 24 24"><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.59 5.58L20 12l-8-8-8 8z"/></svg>`;
+  const btn = document.querySelector(".send-btn");
+  if(val){
+    btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 50 50">
+      <circle cx="25" cy="25" r="20" stroke="white" stroke-width="4" fill="none" stroke-dasharray="90" stroke-linecap="round">
+        <animateTransform attributeName="transform" type="rotate" repeatCount="indefinite" dur="0.8s" values="0 25 25;360 25 25"/>
+      </circle>
+    </svg>`;
+  }else{
+    btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="white" viewBox="0 0 24 24">
+      <path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.59 5.58L20 12l-8-8-8 8z"/>
+    </svg>`;
+  }
 }
 
 function typeResponse(sender, message){
+    // loại bỏ các ký hiệu markdown không mong muốn
+    message = message
+      .replace(/```html|```/gi, "")
+      .replace(/\*\*Hình ảnh:\*\*/gi, "")
+      .replace(/- \*\*Hình ảnh:\*\*/gi, "")
+      .trim();
+
     const box = document.getElementById("chat-box");
     const row = document.createElement("div");
     row.className = "chat-row";
@@ -51,12 +67,10 @@ function typeResponse(sender, message){
     box.appendChild(row);
     box.scrollTop = box.scrollHeight;
 
-    // tách text và html phần sản phẩm
     const idx = message.search(/<div|<img/i);
     const textPart = idx > -1 ? message.substring(0, idx) : message;
     const htmlPart = idx > -1 ? message.substring(idx) : "";
 
-    // typing effect (nhanh và nhẹ)
     const span = bubble.querySelector(".typing");
     let i = 0;
     const tick = setInterval(()=>{
