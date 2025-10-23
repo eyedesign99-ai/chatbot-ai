@@ -1,7 +1,7 @@
 body {
     font-family: 'Segoe UI', sans-serif;
     background-color: #ffffff;
-    padding: 0px;
+    padding: 10px;
     margin: 0;
 }
 .container {
@@ -175,7 +175,9 @@ img.fade-in.show {
 /*  Fix hiển thị trên Render / WP */
 /* ============================== */
 .bot-message {
-    width: 90%;
+    width: 100%;
     display: block;
     clear: both;
+    align-items: center;
+    
 }
