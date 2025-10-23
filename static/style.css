@@ -138,7 +138,7 @@ img.fade-in.show {
     padding: 8px;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    width: 100%;
+    width: 90%;
 }
 .sanpham:hover {
     transform: translateY(-2px);
