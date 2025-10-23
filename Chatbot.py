@@ -80,10 +80,10 @@ def enrich_product_data(context_list):
             # ✅ Bổ sung link xem chi tiết + xem AR
             item["hinh_html"] = f"""
                 <div class='sanpham'>
-                    <img src='https://cgi.vn/image/{img_path}' style='max-width:100%; border-radius:10px;'>
+                    <img src='https://cgi.vn/image/{img_path}' style='max-width:90%; border-radius:10px;'>
                     <p>
-                        <a href='https://cgi.vn/san-pham/{img_id}' target='_blank'>Xem chi tiết</a> |
-                        <a href='https://cgi.vn/ar/{img_id}' target='_blank'>Xem AR</a>
+                        <a href='https://cgi.vn/ar/{img_id}' target='_blank'>Xem AR</a> |
+                        <a href='https://cgi.vn/san-pham/{img_id}' target='_blank'>Xem Chi Tiết</a>
                     </p>
                 </div>
             """
