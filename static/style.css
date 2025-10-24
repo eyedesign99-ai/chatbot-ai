@@ -1,7 +1,7 @@
 body {
     font-family: 'Segoe UI', sans-serif;
     background-color: #ffffff;
-    padding: 0px;
+    padding: 10px;
     margin: 0;
 }
 .container {
@@ -69,7 +69,7 @@ button:hover {
     padding: 10px 14px;
     margin: 6px 0;
     display: inline-block;
-    max-width: 100%;
+    max-width: 90%;
     word-wrap: break-word;
 }
 .chat-bubble.user {
@@ -92,8 +92,8 @@ button:hover {
 }
 .chat-bubble.bot {
     background-color: #ffffff;
-    border-radius: 0px;
-    padding: 0px 0px;
+    border-radius: 12px;
+    padding: 10px 14px;
     display: inline-block;
     max-width: 100%;
     word-wrap: break-word;
@@ -116,5 +116,3 @@ img.fade-in {
 img.fade-in.show {
     opacity: 1;
 }
-
-
