@@ -1,141 +1,84 @@
-import requests
-import openai
-import json
-import os
-from openpyxl import Workbook, load_workbook
-from datetime import datetime
-import uuid
+# Chatbot_SSE.py
+from flask import Flask, request, Response, jsonify
+from openai import OpenAI
+import os, json, requests, re
 
-# Cấu hình API Key của OpenAI
-openai.api_key = os.getenv("OPENAI_API_KEY")
-client = openai.OpenAI(api_key=openai.api_key)
+# --- Cấu hình Flask ---
+app = Flask(__name__)
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# --- Tải dữ liệu từ price.json ---
-price_path = os.path.join(os.path.dirname(__file__), "information", "price.json")
-try:
-    with open(price_path, "r", encoding="utf-8") as f:
-        ty_le_khung_data = json.load(f)
-    print(f"✅ Đã nạp dữ liệu từ: {os.path.abspath(price_path)}")
-except FileNotFoundError:
-    ty_le_khung_data = {}
-    print(f"❌ Không tìm thấy file: {price_path}")
-
-# --- Thêm file tri thức phong thủy ---
-phong_thuy_path = os.path.join(os.path.dirname(__file__), "information", "phong_thuy.json")
-thong_tin_chung = {}
-try:
-    with open(phong_thuy_path, "r", encoding="utf-8") as f:
-        thong_tin_chung.update({"phong_thuy": json.load(f)})
-    print(f"✅ Đã nạp dữ liệu từ: {os.path.abspath(phong_thuy_path)}")
-except FileNotFoundError:
-    print(f"❌ Không tìm thấy file: {phong_thuy_path}")
-
-# --- Sinh ID phiên chat ---
-session_id = str(uuid.uuid4())[:8]
-
-# --- Ghi log chat vào Excel ---
-def log_chat(user_input, bot_reply):
-    log_dir = os.path.join(os.path.dirname(__file__), "logs")
-    os.makedirs(log_dir, exist_ok=True)
-
-    today = datetime.now().strftime("%Y-%m-%d")
-    log_file = os.path.join(log_dir, f"{today}.xlsx")
-
-    if os.path.exists(log_file):
-        wb = load_workbook(log_file)
-        ws = wb.active
-    else:
-        wb = Workbook()
-        ws = wb.active
-        ws.append(["ID phiên", "Thời gian", "Người dùng", "Chatbot"])
-
-    current_time = datetime.now().strftime("%H:%M:%S")
-    ws.append([session_id, current_time, user_input, bot_reply])
-    wb.save(log_file)
-
-# --- Gửi truy vấn đến FAISS server ---
+# --- Truy vấn dữ liệu từ FAISS ---
 def query_server(user_input):
-    url = "http://127.0.0.1:5000/search"
-    headers = {"Content-Type": "application/json"}
-    data = {"query": user_input}
     try:
-        response = requests.post(url, json=data, headers=headers)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            print("❌ Server trả về lỗi:", response.text)
-            return None
-    except requests.exceptions.ConnectionError as e:
-        print("❌ Không kết nối được đến Flask server:", e)
-        return None
+        res = requests.post("http://127.0.0.1:5000/search", json={"query": user_input})
+        return res.json() if res.status_code == 200 else []
+    except:
+        return []
 
-# --- Chuẩn hóa dữ liệu sản phẩm: thêm hình_html và link_html ---
+# --- Bổ sung HTML cho sản phẩm ---
 def enrich_product_data(context_list):
     for item in context_list:
         if isinstance(item, dict) and "hình_ảnh" in item and "id" in item:
             img_path = item["hình_ảnh"]
             sp_id = item["id"]
-            img_id = sp_id.split("-")[1] if "-" in sp_id else sp_id
-
-            # ✅ Bổ sung link xem chi tiết + xem AR
             item["hinh_html"] = f"""
                 <div class='sanpham'>
-                    <img src='https://cgi.vn/image/{img_path}' style='max-width:90%; border-radius:10px;'>
+                    <img src='https://cgi.vn/image/{img_path}' style='max-width:90%;border-radius:10px;margin-top:5px;'>
                     <p>
-                        <a href='https://cgi.vn/ar/{img_id}' target='_blank'>Xem AR</a> |
-                        <a href='https://cgi.vn/san-pham/{img_id}' target='_blank'>Xem Chi Tiết</a>
+                        <a href='https://cgi.vn/ar/{sp_id}' target='_blank'>Xem AR</a> |
+                        <a href='https://cgi.vn/san-pham/{sp_id}' target='_blank'>Chi tiết</a>
                     </p>
                 </div>
             """
     return context_list
 
-# --- Prompt bán hàng ---
-system_prompt = """
-Bạn là một nhân viên bán tranh chuyên nghiệp. 
-Nguyên tắc hiển thị:
-- LUÔN sử dụng đúng đường dẫn hình ảnh và link sản phẩm có sẵn trong dữ liệu.
-- Hình ảnh hiển thị theo dạng HTML, ví dụ:
-  <img src='/static/product/cgi/28.jpg' style='max-width: 100%; border-radius: 10px;'>
-  <p><a href='https://cgi.vn/ar/28' target='_blank'>Xem AR</a> | <a href='https://cgi.vn/san-pham/28' target='_blank'>Xem chi tiết</a></p>
-- Không dùng markdown ![Hình ảnh](...) hoặc link giả (#).
-- Trả lời tự nhiên, thân thiện như người bán hàng.
-"""
+# --- Gửi phản hồi dạng SSE ---
+@app.route("/chat-stream", methods=["POST"])
+def chat_stream():
+    user_input = request.json.get("message", "")
+    if not user_input:
+        return jsonify({"error": "Missing message"}), 400
 
-# --- Gửi câu hỏi tới OpenAI ---
-def query_openai_with_context(context_list, user_input):
-    context_list = enrich_product_data(context_list)
-    context_text = json.dumps(context_list, ensure_ascii=False, indent=2)
+    # Lấy dữ liệu ngữ cảnh từ FAISS
+    context = enrich_product_data(query_server(user_input))
+    context_text = json.dumps(context, ensure_ascii=False)
 
     messages = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": f"Khách hỏi: {user_input}\n\nDữ liệu sản phẩm:\n{context_text}"}
+        {"role": "system", "content": "Bạn là chuyên viên tư vấn tranh chuyên nghiệp, hãy trả lời tự nhiên và chèn HTML sản phẩm khi phù hợp."},
+        {"role": "user", "content": f"Khách hỏi: {user_input}\n\nDữ liệu:\n{context_text}"}
     ]
 
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=messages,
-        temperature=0.7
-    )
+    def stream():
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=messages,
+                temperature=0.7,
+                stream=True
+            )
 
-    reply = response.choices[0].message.content
-    reply = reply.replace("&lt;", "<").replace("&gt;", ">")  # tránh escape HTML
-    return reply
+            # Gửi từng token ra frontend (typing effect)
+            for chunk in response:
+                if hasattr(chunk, "choices") and chunk.choices[0].delta.get("content"):
+                    content = chunk.choices[0].delta["content"]
+                    yield f"data: {json.dumps({'token': content})}\n\n"
 
-# --- Chạy chatbot ---
-def chatbot():
-    print("🤖 Chatbot đã sẵn sàng! Gõ 'exit' để thoát.\n")
-    while True:
-        user_input = input("Bạn: ")
-        if user_input.lower() == "exit":
-            print("👋 Chatbot kết thúc.")
-            break
-        faiss_results = query_server(user_input)
-        if faiss_results:
-            gpt_response = query_openai_with_context(faiss_results, user_input)
-        else:
-            gpt_response = query_openai_with_context([], user_input)
-        print("Chatbot:", gpt_response)
-        log_chat(user_input, gpt_response)
+            # Gửi phần HTML sản phẩm (nếu có)
+            html_part = "".join([item.get("hinh_html", "") for item in context])
+            if html_part:
+                yield f"data: {json.dumps({'html': html_part})}\n\n"
+
+            yield "data: [DONE]\n\n"
+
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+
+    return Response(stream(), mimetype="text/event-stream")
+
+# --- Kiểm tra trạng thái ---
+@app.route("/")
+def index():
+    return jsonify({"status": "🤖 Chatbot SSE đang hoạt động"})
 
 if __name__ == "__main__":
-    chatbot()
+    app.run(host="0.0.0.0", port=8080)
