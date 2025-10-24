@@ -17,8 +17,8 @@ body {
     border: 1px solid #ffffff;
     padding: 0px;
     background-color: #ffffff;
-    margin-bottom: 15px;
-    border-radius: 8px;
+    margin-bottom: 0px;
+    border-radius: 0px;
 }
 .input-area {
     display: flex;
@@ -93,7 +93,7 @@ button:hover {
 .chat-bubble.bot {
     background-color: #ffffff;
     border-radius: 0px;
-    padding: 5px 5px;
+    padding: 10px 10px;
     display: inline-block;
     max-width: 100%;
     word-wrap: break-word;
