@@ -69,7 +69,7 @@ button:hover {
     padding: 10px 14px;
     margin: 6px 0;
     display: inline-block;
-    max-width: 90%;
+    max-width: 100%;
     word-wrap: break-word;
 }
 .chat-bubble.user {
