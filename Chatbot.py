@@ -23,7 +23,7 @@ def enrich_product_data(context_list):
             sp_id = item["id"]
             item["hinh_html"] = f"""
                 <div class='sanpham'>
-                    <img src='https://cgi.vn/image/{img_path}' style='max-width:90%;border-radius:10px;margin-top:5px;'>
+                    <img src='https://cgi.vn/image/{img_path}' class="product-image">
                     <p>
                         <a href='https://cgi.vn/ar/{sp_id}' target='_blank'>Xem AR</a> |
                         <a href='https://cgi.vn/san-pham/{sp_id}' target='_blank'>Chi tiết</a>
