@@ -92,8 +92,8 @@ button:hover {
 }
 .chat-bubble.bot {
     background-color: #ffffff;
-    border-radius: 12px;
-    padding: 10px 14px;
+    border-radius: 0px;
+    padding: 0px 0px;
     display: inline-block;
     max-width: 100%;
     word-wrap: break-word;
@@ -118,5 +118,3 @@ img.fade-in.show {
 }
 
 
-/* Nếu muốn loại hẳn "bong bóng" cho toàn bộ phản hồi bot (tuỳ chọn) */
-// .chat-bubble.bot { background: transparent; box-shadow: none; padding: 6px 0; }
