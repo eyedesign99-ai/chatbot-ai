@@ -75,10 +75,13 @@ function typeResponse(sender, message) {
             clearInterval(interval);
             // ✅ Hiển thị phần HTML sản phẩm (ảnh, link, v.v.)
             if (htmlPart) {
+                // tạo container sạch (không có background của chat bubble)
                 const tempDiv = document.createElement("div");
-                tempDiv.classList.add("bot-message"); // dùng CSS fix layout
+                tempDiv.classList.add("bot-message"); // .bot-message bây giờ trong CSS là trong suốt
+                // chèn HTML nguyên gốc (ví dụ <div class="sanpham">...</div>)
                 tempDiv.innerHTML = htmlPart;
-                bubble.insertAdjacentElement("afterend", tempDiv);
+                // chèn ngay sau dòng chat (đảm bảo thứ tự)
+                div.insertAdjacentElement("afterend", tempDiv);
                 box.scrollTop = box.scrollHeight;
             }
         }

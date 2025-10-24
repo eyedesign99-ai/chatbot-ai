@@ -1,7 +1,7 @@
 body {
     font-family: 'Segoe UI', sans-serif;
     background-color: #ffffff;
-    padding: 10px;
+    padding: 0px;
     margin: 0;
 }
 .container {
@@ -117,67 +117,6 @@ img.fade-in.show {
     opacity: 1;
 }
 
-/* ============================== */
-/*   Giao diện hiển thị sản phẩm  */
-/* ============================== */
 
-/* ✅ Mỗi sản phẩm 1 cột */
-.gallery,
-.chatbot-gallery {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 12px !important;
-    margin-top: 10px !important;
-    align-items: center;
-}
-
-.sanpham {
-    background: #ffffff;
-    border-radius: 10px;
-    text-align: center;
-    padding: 1px;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    width: 100%;
-}
-.sanpham:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
-}
-.sanpham img {
-    width: 100%;
-    border-radius: 10px;
-    display: block;
-}
-
-/* ✅ Canh giữa phần link "Xem chi tiết" & "Xem AR" */
-.sanpham p {
-    margin-top: 6px;
-    margin-bottom: 0;
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-.sanpham a {
-    color: #0f4bbd;
-    font-size: 14px;
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.2s ease, transform 0.2s ease;
-}
-.sanpham a:hover {
-    color: #000;
-    transform: scale(1.05);
-}
-
-/* ============================== */
-/*  Fix hiển thị trên Render / WP */
-/* ============================== */
-.bot-message {
-    width: 100%;
-    display: block;
-    clear: both;
-    align-items: center;
-    
-}
+/* Nếu muốn loại hẳn "bong bóng" cho toàn bộ phản hồi bot (tuỳ chọn) */
+// .chat-bubble.bot { background: transparent; box-shadow: none; padding: 6px 0; }
