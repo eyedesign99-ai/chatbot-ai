@@ -1,7 +1,0 @@
-flask
-waitress
-faiss-cpu
-numpy
-openai
-requests
-openpyxl
