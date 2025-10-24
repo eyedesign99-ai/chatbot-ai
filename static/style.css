@@ -116,3 +116,13 @@ img.fade-in {
 img.fade-in.show {
     opacity: 1;
 }
+
+/* Hiển thị ảnh sản phẩm*/
+.product-image {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    border-radius: 0 !important;
+    display: block;
+    margin: 10px 0;
+}
