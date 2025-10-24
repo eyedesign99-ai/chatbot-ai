@@ -101,73 +101,109 @@ function typeResponse(sender, message) {
     }, 8);
 }
 
-/* Chuyển các đoạn markdown-like sang HTML:
-   - ![alt](url) -> <img src="url" alt="alt">
-   - [text](url) -> <a href="url" target="_blank" rel="noopener">text</a>
-   - các URL thô -> <a ...>url</a>
-   - nhóm các link vào 1 <p class="links-row"> để CSS canh giữa */
+/* --- Thay thế toàn bộ hàm parseMarkdownLike bằng version này --- */
 function parseMarkdownLike(input) {
-    let s = input || "";
+    const s = input || "";
 
-    // 1) nếu backend đã trả HTML thực sự (có <div class=...> hoặc <img>), giữ nguyên
+    // Nếu backend đã trả HTML thực sự thì giữ nguyên (nhưng convert bare URLs bên trong)
     if (/<\/?[a-z][\s\S]*>/i.test(s)) {
-        // nhưng vẫn convert bare URLs inside that HTML for safety
         return convertBareUrls(s);
     }
 
-    // 2) thay các image markdown ![alt](url)
-    s = s.replace(/!\[([^\]]*?)\]\(([^)]+?)\)/g, (m, alt, url) => {
-        const cleanUrl = url.trim();
-        const cleanAlt = escapeHtml(alt || "");
-        return `<div class="sanpham-image-wrap"><img src="${escapeAttr(cleanUrl)}" alt="${cleanAlt}" class="fade-in"></div>`;
-    });
+    // Regex: image markdown | link markdown | bare url
+    const regex = /!\[([^\]]*?)\]\(([^)]+?)\)|\[((?:[^\]]+?))\]\(([^)]+?)\)|(https?:\/\/[^\s)]+)/g;
 
-    // 3) thay các link markdown [text](url)
-    // lưu các link vào mảng để gom chung vào 1 <p>
-    const links = [];
-    s = s.replace(/\[([^\]]+?)\]\(([^)]+?)\)/g, (m, text, url) => {
-        links.push({ text: escapeHtml(text), url: escapeAttr(url.trim()) });
-        return ""; // remove original
-    });
-
-    // 4) tìm các bare URLs còn lại và thêm vào links
-    const urlPattern = /https?:\/\/[^\s)]+/g;
+    const tokens = [];
+    let lastIndex = 0;
     let m;
-    while ((m = urlPattern.exec(s)) !== null) {
-        links.push({ text: escapeHtml(m[0]), url: escapeAttr(m[0]) });
+    while ((m = regex.exec(s)) !== null) {
+        // text giữa các match
+        if (m.index > lastIndex) {
+            tokens.push({ type: "text", text: s.slice(lastIndex, m.index) });
+        }
+
+        if (m[1] !== undefined) {
+            // image: m[1]=alt, m[2]=url
+            tokens.push({ type: "image", alt: m[1], url: m[2] });
+        } else if (m[3] !== undefined) {
+            // link: m[3]=text, m[4]=url
+            tokens.push({ type: "link", text: m[3], url: m[4] });
+        } else if (m[5] !== undefined) {
+            // bare url
+            tokens.push({ type: "url", url: m[5] });
+        }
+        lastIndex = regex.lastIndex;
     }
-    // xóa bare urls xuất hiện trong text (đã ghi lại)
-    s = s.replace(urlPattern, "");
+    // phần text cuối
+    if (lastIndex < s.length) {
+        tokens.push({ type: "text", text: s.slice(lastIndex) });
+    }
 
-    // 5) xóa các kí tự tách dòng thừa, số thứ tự "3." ở đầu
-    s = s.replace(/^\s*\d+\.\s*/gm, "");
-    s = s.trim();
+    // gom dữ liệu: ảnh, link, text
+    const images = tokens.filter(t => t.type === "image");
+    const links = tokens.filter(t => t.type === "link" || t.type === "url");
+    const textPieces = tokens
+        .filter(t => t.type === "text")
+        .map(t => t.text.replace(/\r\n|\r/g, "\n"))
+        .join("\n")
+        .split("\n")
+        .map(l => l.trim())
+        .filter(Boolean);
 
-    // 6) kết hợp: nếu có ảnh (class sanpham-image-wrap), đặt links dưới ảnh, canh giữa
-    let result = s;
+    // lấy title (dòng đầu) và mô tả (còn lại)
+    const title = textPieces.length ? textPieces.shift() : "";
+    const desc = textPieces.join(" ");
+
+    // build HTML
+    let inner = "";
+
+    // nếu có ảnh -> tạo block ảnh (giữ thứ tự: tất cả ảnh xuất theo thứ tự)
+    if (images.length) {
+        inner += images.map(img => {
+            const url = escapeAttr(img.url.trim());
+            const alt = escapeHtml(img.alt || "");
+            return `<div class="sanpham-image-wrap"><img src="${url}" alt="${alt}" class="fade-in"></div>`;
+        }).join("");
+    }
+
+    // nếu không có ảnh, sẽ hiển thị title/desc bên trong .sanpham
+    if (!/<img/i.test(inner)) {
+        inner = `<h4>${escapeHtml(title)}</h4><div class="desc">${escapeHtml(desc)}</div>`;
+    }
+
+    // build links row (giữ toàn bộ link markdown và bare urls theo thứ tự xuất hiện)
+    let linksHtml = "";
     if (links.length) {
-        const linksHtml = links.map(l => `<a href="${l.url}" target="_blank" rel="noopener">${l.text}</a>`).join(' <span class="sep">|</span> ');
-        result += `<p class="links-row">${linksHtml}</p>`;
+        linksHtml = links.map(l => {
+            const url = escapeAttr((l.url || "").trim());
+            const text = escapeHtml(l.text || l.url);
+            return `<a href="${url}" target="_blank" rel="noopener">${text}</a>`;
+        }).join(' <span class="sep">|</span> ');
+        inner += `<p class="links-row">${linksHtml}</p>`;
     }
 
-    // nếu không có image nhưng có text chứa tiêu đề + link, bọc tổng thể bằng .sanpham để CSS xử lý
-    // kiểm tra có <img> đã được chèn vào result
-    if (!/<img/i.test(result)) {
-        // nếu result có 2 hay nhiều dòng, convert những dòng đầu làm tiêu đề
-        const lines = result.split(/\n+/).map(l => l.trim()).filter(Boolean);
-        if (lines.length) {
-            const title = escapeHtml(lines.shift());
-            const desc = escapeHtml(lines.join(' '));
-            result = `<div class="sanpham"><h4>${title}</h4><div class="desc">${desc}</div>${links.length ? `<p class="links-row">${links.map(l=>`<a href="${l.url}" target="_blank" rel="noopener">${l.text}</a>`).join(' <span class="sep">|</span> ')}</p>` : ''}</div>`;
-        }
-    } else {
-        // nếu đã có ảnh, bọc vào .sanpham nếu chưa bọc
-        if (!/class=["']?sanpham["']?/i.test(result)) {
-            result = `<div class="sanpham">${result}</div>`;
-        }
-    }
-
+    // bọc vào .sanpham
+    const result = `<div class="sanpham">${inner}</div>`;
     return result;
+}
+
+/* helpers (giữ nguyên từ code trước đó) */
+function convertBareUrls(html) {
+    return html.replace(/(https?:\/\/[^\s"']+)/g, (m) => {
+        const u = escapeAttr(m);
+        return `<a href="${u}" target="_blank" rel="noopener">${escapeHtml(m)}</a>`;
+    });
+}
+function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+}
+function escapeAttr(s) {
+    return String(s).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 /* convert bare URLs inside existing HTML to anchors (simple) */
