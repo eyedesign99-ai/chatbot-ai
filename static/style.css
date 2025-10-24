@@ -126,3 +126,15 @@ img.fade-in.show {
     display: block;
     margin: 10px 0;
 }
+
+.bot-html img,
+.bot-image,
+.chat-bubble.bot img {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  border-radius: 0 !important;
+  display: block;
+  margin: 10px 0;
+}
+
