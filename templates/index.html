@@ -12,7 +12,7 @@
         <div class="input-area">
             <input type="text" id="user-input" placeholder="Bạn muốn mua tranh gì..." />
             <button onclick="sendMessage()" class="send-btn" aria-label="Gửi">
-                <img src="/static/arrow.png" alt="send" width="35" height="35">
+                <img src="{{ url_for('static', filename='arrow.png') }}" alt="send" width="35" height="35">
             </button>
         </div>
     </div>
