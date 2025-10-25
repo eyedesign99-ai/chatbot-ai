@@ -37,7 +37,7 @@ function appendMessage(sender, message){
 function setLoading(val){
     const btn = document.querySelector(".send-btn");
     btn.innerHTML = val ? `<img src="/static/icon.png" class="loading-icon" alt="...">`
-                        : `<svg xmlns="/static/icon.png" class="loading-icon" alt="...">`;
+                        : `<svg xmlns="/static/icon.jpg" class="loading-icon" alt="...">`;
 }
 
 function typeResponse(sender, message){
