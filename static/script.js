@@ -34,13 +34,10 @@ function appendMessage(sender, message){
     box.scrollTop = box.scrollHeight;
 }
 
-function showLoadingIcon(show) {
-    const sendBtn = document.querySelector(".send-btn");
-    sendBtn.innerHTML = show
-        ? `<img src="/static/icon.png" alt="loading" class="loading-icon">`
-        : `<svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="white" viewBox="0 0 24 24">
-                <path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.59 5.58L20 12l-8-8-8 8z"/>
-           </svg>`;
+function setLoading(val){
+    const btn = document.querySelector(".send-btn");
+    btn.innerHTML = val ? `<img src="/static/icon.png" class="loading-icon" alt="...">`
+                        : `<svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="white" viewBox="0 0 24 24"><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.59 5.58L20 12l-8-8-8 8z"/></svg>`;
 }
 
 function typeResponse(sender, message){
