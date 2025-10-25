@@ -56,7 +56,7 @@ def enrich_product_data(context_list):
             img_id = sp_id.split("-")[1] if "-" in sp_id else sp_id
             item["hinh_html"] = (
                 f"<div class='sanpham'>"
-                f"<img src='https://cgi.vn/image/{img_path}' style='max-width:90%; border-radius:10px;'>"
+                f"<img src='https://cgi.vn/image/{img_path}' style='max-width:100%; border-radius:0px;'>"
                 f"<p><a href='https://cgi.vn/ar/{img_id}' target='_blank'>Xem AR</a> | "
                 f"<a href='https://cgi.vn/san-pham/{img_id}' target='_blank'>Xem Chi Tiết</a></p>"
                 f"</div>"
