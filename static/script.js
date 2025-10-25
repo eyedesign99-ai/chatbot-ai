@@ -76,3 +76,7 @@ function typeResponse(sender, message){
     }, 8);
 }
 
+function escapeHtml(str){
+    if(!str) return "";
+    return str.replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; });
+}
