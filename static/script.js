@@ -1,5 +1,3 @@
-// script_sse.js
-
 async function sendMessage() {
     const input = document.getElementById("user-input");
     const message = input.value.trim();
@@ -7,72 +5,80 @@ async function sendMessage() {
 
     appendMessage("Bạn", message);
     input.value = "";
+
     showLoadingIcon(true);
 
-    const url = "https://chatbot-ai-pm0b.onrender.com/chat-stream";
-
-    const evtSource = new EventSourcePolyfill(url, {
-        headers: { "Content-Type": "application/json" },
-        payload: JSON.stringify({ message }),
-        method: "POST"
+    const response = await fetch("https://chatbot-ai-pm0b.onrender.com/chat", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message })
     });
 
-    const chatBox = document.getElementById("chat-box");
-    let currentDiv = document.createElement("div");
-    currentDiv.className = "chat-row bot";
-    currentDiv.innerHTML = `<div class="chat-bubble bot"><strong>CGI:</strong> <span id="typing-text"></span></div>`;
-    chatBox.appendChild(currentDiv);
-    const typingSpan = currentDiv.querySelector("#typing-text");
+    const data = await response.json();
 
-    evtSource.onmessage = (event) => {
-        if (event.data === "[DONE]") {
-            evtSource.close();
-            showLoadingIcon(false);
-            return;
-        }
+    // ✅ Gộp phản hồi văn bản + HTML (nếu có)
+    typeResponse("Bot", `${data.response || ''}${data.hinh_html || ''}`);
 
-        const data = JSON.parse(event.data);
-
-        if (data.token) {
-            typingSpan.innerHTML += data.token;
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        if (data.html) {
-            const htmlDiv = document.createElement("div");
-            htmlDiv.className = "bot-html";
-            htmlDiv.innerHTML = data.html;
-            chatBox.appendChild(htmlDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
-
-        if (data.error) {
-            appendMessage("Bot", `⚠️ Lỗi: ${data.error}`);
-            showLoadingIcon(false);
-            evtSource.close();
-        }
-    };
-
-    evtSource.onerror = () => {
-        appendMessage("Bot", "⚠️ Kết nối bị gián đoạn. Vui lòng thử lại sau.");
-        showLoadingIcon(false);
-        evtSource.close();
-    };
+    showLoadingIcon(false);
 }
 
 function appendMessage(sender, message) {
-    const chatBox = document.getElementById("chat-box");
+    const box = document.getElementById("chat-box");
     const div = document.createElement("div");
-    div.className = `chat-row ${sender === "Bạn" ? "user" : "bot"}`;
-    div.innerHTML = `<div class="chat-bubble ${sender === "Bạn" ? "user" : "bot"}"><strong>${sender}:</strong> ${message}</div>`;
-    chatBox.appendChild(div);
-    chatBox.scrollTop = chatBox.scrollHeight;
+    let displayName = (sender === "Bot") ? "CGI" : sender;
+    let isUser = (sender === "Bạn");
+    div.classList.add("chat-row");
+    div.innerHTML = isUser
+        ? `<div class="chat-bubble user"><strong>${displayName}:</strong> ${message}</div>`
+        : `<div class="chat-bubble bot"><strong>${displayName}:</strong> ${message}</div>`;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
 }
 
-// 👇 Sửa phần này
+// ✅ Giữ SVG như bản cũ + thêm icon loading bằng /static/icon.png
 function showLoadingIcon(show) {
     const sendBtn = document.querySelector(".send-btn");
     sendBtn.innerHTML = show
         ? `<img src="/static/icon.png" alt="loading" class="loading-icon">`
-        : `<img src="/static/arrow.png" alt="send" width="35" height="35">`;
+        : `<svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="white" viewBox="0 0 24 24">
+                <path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.59 5.58L20 12l-8-8-8 8z"/>
+           </svg>`;
+}
+
+function typeResponse(sender, message) {
+    const box = document.getElementById("chat-box");
+    const div = document.createElement("div");
+    let displayName = (sender === "Bot") ? "CGI" : sender;
+    div.classList.add("chat-row");
+
+    const bubble = document.createElement("div");
+    bubble.className = "chat-bubble bot";
+
+    const splitIndex = message.search(/<div|<img/i);
+    const textPart = splitIndex > -1 ? message.substring(0, splitIndex) : message;
+    const htmlPart = splitIndex > -1 ? message.substring(splitIndex) : "";
+
+    bubble.innerHTML = `<strong>${displayName}:</strong> <span id="typing-text"></span>`;
+    div.appendChild(bubble);
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+
+    let i = 0;
+    const typingSpan = bubble.querySelector("#typing-text");
+
+    const interval = setInterval(() => {
+        if (i < textPart.length) {
+            typingSpan.innerHTML += textPart.charAt(i);
+            i++;
+        } else {
+            clearInterval(interval);
+            if (htmlPart) {
+                const tempDiv = document.createElement("div");
+                tempDiv.classList.add("bot-message");
+                tempDiv.innerHTML = htmlPart;
+                bubble.insertAdjacentElement("afterend", tempDiv);
+                box.scrollTop = box.scrollHeight;
+            }
+        }
+    }, 10);
 }
