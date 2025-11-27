@@ -1,82 +1,94 @@
-async function sendMessage(){
+async function sendMessage() {
     const input = document.getElementById("user-input");
-    const msg = input.value.trim();
-    if(!msg) return;
-    appendMessage("Bạn", msg);
+    const message = input.value.trim();
+    if (!message) return;
+
+    appendMessage("Bạn", message);
     input.value = "";
-    setLoading(true);
-    try{
-        const res = await fetch("https://chatbot-ai-pm0b.onrender.com/chat", {
-            method: "POST",
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({message: msg})
-        });
-        const data = await res.json();
-        typeResponse("Bot", `${data.response||''}${data.hinh_html||''}`);
-    }catch(e){
-        appendMessage("Bot", "Xin lỗi, có lỗi kết nối.");
-    }finally{
-        setLoading(false);
-    }
+
+    showLoadingIcon(true);
+
+    const response = await fetch("/chat", {
+        method: "POST",
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message })
+    });
+
+    const data = await response.json();
+
+    typeResponse("Bot", data.response);
+
+    showLoadingIcon(false);
 }
 
-function appendMessage(sender, message){
+function appendMessage(sender, message) {
     const box = document.getElementById("chat-box");
     const div = document.createElement("div");
-    div.className = "chat-row";
-    const isUser = sender === "Bạn";
-    const name = isUser ? sender : "CGI";
-    const bubble = document.createElement("div");
-    bubble.className = "chat-bubble " + (isUser ? "user" : "bot");
-    bubble.innerHTML = `<strong>${name}:</strong> ${escapeHtml(message)}`;
-    div.appendChild(bubble);
+    let displayName = (sender === "Bot") ? "CGI" : sender;
+    let isUser = (sender === "Bạn");
+    div.classList.add("chat-row");
+    div.innerHTML = isUser
+        ? `<div class="chat-bubble user"><strong>${displayName}:</strong> ${message}</div>`
+        : `<div class="chat-bubble bot"><strong>${displayName}:</strong> ${message}</div>`;
     box.appendChild(div);
     box.scrollTop = box.scrollHeight;
 }
 
-function setLoading(val){
-    const btn = document.querySelector(".send-btn");
-    btn.innerHTML = val ? `<img src="/static/icon.png" class="loading-icon" alt="...">`
-                        : `<svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="white" viewBox="0 0 24 24"><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.59 5.58L20 12l-8-8-8 8z"/></svg>`;
+function showLoadingIcon(show) {
+    const sendBtn = document.querySelector(".send-btn");
+    sendBtn.innerHTML = show
+        ? `<img src="/static/icon.png" alt="loading" class="loading-icon">`
+        : `<svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" fill="white" viewBox="0 0 24 24">
+                <path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.59 5.58L20 12l-8-8-8 8z"/>
+           </svg>`;
 }
 
-function typeResponse(sender, message){
+function typeResponse(sender, message) {
     const box = document.getElementById("chat-box");
-    const row = document.createElement("div");
-    row.className = "chat-row";
+    const div = document.createElement("div");
+    let displayName = (sender === "Bot") ? "CGI" : sender;
+    div.classList.add("chat-row");
+
     const bubble = document.createElement("div");
     bubble.className = "chat-bubble bot";
-    bubble.innerHTML = `<strong>CGI:</strong> <span class="typing"></span>`;
-    row.appendChild(bubble);
-    box.appendChild(row);
+
+    const typingSpan = document.createElement("span");
+    typingSpan.setAttribute("id", "typing-text");
+
+    // Tách phần text và phần HTML (sau cùng)
+    const parts = message.split(/(<img.*?>|<a.*?<\/a>|<p.*?<\/p>)/gi);
+    const textPart = parts[0];
+    const htmlParts = parts.slice(1).join("");
+
+    bubble.innerHTML = `<strong>${displayName}:</strong> `;
+    bubble.appendChild(typingSpan);
+    div.appendChild(bubble);
+    box.appendChild(div);
     box.scrollTop = box.scrollHeight;
 
-    // tách text và html phần sản phẩm
-    const idx = message.search(/<div|<img/i);
-    const textPart = idx > -1 ? message.substring(0, idx) : message;
-    const htmlPart = idx > -1 ? message.substring(idx) : "";
-
-    // typing effect (nhanh và nhẹ)
-    const span = bubble.querySelector(".typing");
-    let i = 0;
-    const tick = setInterval(()=>{
-        if(i < textPart.length){
-            span.textContent += textPart.charAt(i++);
+    let index = 0;
+    const interval = setInterval(() => {
+        if (index < textPart.length) {
+            typingSpan.innerHTML += textPart.charAt(index);
             box.scrollTop = box.scrollHeight;
+            index++;
         } else {
-            clearInterval(tick);
-            if(htmlPart){
+            clearInterval(interval);
+            if (htmlParts) {
                 const temp = document.createElement("div");
-                temp.className = "bot-message";
-                temp.innerHTML = htmlPart;
-                bubble.insertAdjacentElement("afterend", temp);
+                temp.innerHTML = htmlParts;
+                const imgs = temp.querySelectorAll("img");
+
+                imgs.forEach(img => {
+                    img.classList.add("fade-in");
+                    img.onload = () => {
+                        img.classList.add("show");
+                    };
+                });
+
+                bubble.appendChild(temp);
                 box.scrollTop = box.scrollHeight;
             }
         }
-    }, 8);
-}
-
-function escapeHtml(str){
-    if(!str) return "";
-    return str.replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; });
+    }, 10);
 }
