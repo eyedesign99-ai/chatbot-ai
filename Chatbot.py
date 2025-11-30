@@ -15,13 +15,27 @@ import numpy as np
 # 1. CẤU HÌNH ĐƯỜNG DẪN
 # =========================
 
-BASE_DIR = r"F:\Chatbot\central_data"
+REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
+
+
+def resolve_path(env_name: str, default_relative: str) -> str:
+    """
+    Pick a path from environment if provided, otherwise fall back to repo-relative.
+    This keeps local dev (Windows) and deploy (Linux) in sync without hardcoding drives.
+    """
+    env_value = os.getenv(env_name)
+    if env_value:
+        return env_value
+    return os.path.join(REPO_ROOT, default_relative)
+
+
+BASE_DIR = resolve_path("CHATBOT_DATA_DIR", "central_data")
 
 SQLITE_PATH = os.path.join(BASE_DIR, "sqlite", "paintings.db")
 TOPIC_META_PATH = os.path.join(BASE_DIR, "topics", "topic_meta.pkl")
 TOPIC_VECTORS_PATH = os.path.join(BASE_DIR, "topics", "topic_vectors.npy")
 
-LOG_DIR = r"F:\Chatbot\logs"
+LOG_DIR = resolve_path("CHATBOT_LOG_DIR", "logs")
 
 # =========================
 # 2. OPENAI CLIENT & API KEY
@@ -78,6 +92,11 @@ def embed_text(text: str):
 
 
 def get_db_connection():
+    if not os.path.exists(SQLITE_PATH):
+        raise RuntimeError(
+            f"SQLite database not found at {SQLITE_PATH}. "
+            "Set CHATBOT_DATA_DIR to point to the data directory."
+        )
     conn = sqlite3.connect(SQLITE_PATH)
     conn.row_factory = sqlite3.Row
     return conn
