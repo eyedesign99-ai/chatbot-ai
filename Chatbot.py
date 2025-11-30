@@ -370,11 +370,11 @@ class DesignerAgent:
                 )
                 link_html = (
                     f"<a href='https://cgi.vn/san-pham/{sp_id}' "
-                    f"target='_blank'><h6 style='display:inline'>Xem chi tiết</h6></a>"
+                    f"target='_blank'><h5 style='display:inline'>Xem chi tiết</h5></a>"
                 )
                 ar_link_html = (
                     f"<a href='https://cgi.vn/ar/{sp_id}.html' "
-                    f"target='_blank'><h6 style='display:inline'>Xem AR</h6></a>"
+                    f"target='_blank'><h5 style='display:inline'>Xem AR</h5></a>"
                 )
 
                 item["image_html"] = image_html
