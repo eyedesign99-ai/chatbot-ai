@@ -25,7 +25,7 @@ h2 {
 }
 
 .chat-box {
-    height: 520px;
+    height: 510px;
     overflow-y: auto;
     border: 1px solid #ffffff;
     padding: 0px;
@@ -99,7 +99,7 @@ button:hover {
     padding: 10px 14px;
     margin: 3px 0;
     display: inline-block;
-    max-width: 95%;
+    max-width: 75%;
     word-wrap: break-word;
 }
 
