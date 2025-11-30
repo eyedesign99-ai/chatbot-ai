@@ -1,30 +1,30 @@
-from flask import Flask, request, jsonify, render_template
-from Chatbot import query_openai_with_context, search_paintings_for_user_query
-
-app = Flask(__name__)
+from flask import Flask, request, render_template, jsonify
+from Chatbot import DirectorAgent
 
 
-@app.route('/')
-def home():
-    return render_template('index.html')
+app = Flask(
+    __name__,
+    static_url_path="/static",
+    static_folder="static",
+    template_folder="templates"
+)
+
+director = DirectorAgent()
 
 
-@app.route('/chat', methods=['POST'])
+@app.route("/", methods=["GET"])
+def index():
+    return render_template("index.html")
+
+
+@app.route("/chat", methods=["POST"])
 def chat():
-    data = request.get_json()
-    user_message = data.get('message', '')
-
-    # Tìm dữ liệu sản phẩm trước (FAISS/SQLite)
-    faiss_results = search_paintings_for_user_query(user_message)
-
-    # Gửi lên ChatGPT kèm context
-    response = query_openai_with_context(faiss_results or [], user_message)
-
-    return jsonify({'response': response})
+    data = request.get_json() or {}
+    user_input = data.get("message", "")
+    reply = director.handle_user_message(user_input)
+    return jsonify({"reply": reply})
 
 
-if __name__ == '__main__':
-    import os
-    port = int(os.environ.get("PORT", 10000))  # fallback khi chạy local
-    app.run(host="0.0.0.0", port=port)
-
+if __name__ == "__main__":
+    print("Server đang chạy tại http://127.0.0.1:8000/")
+    app.run(host="0.0.0.0", port=8000, debug=True)
