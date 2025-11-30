@@ -14,9 +14,8 @@ body {
     max-width: 760px;
     margin: auto;
     background: #ffffff;
-    border-radius: 16px;
-    padding: 24px;
-    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+    border-radius: 12px;
+    padding: 5px;
 }
 
 h2 {
@@ -28,10 +27,10 @@ h2 {
 .chat-box {
     height: 520px;
     overflow-y: auto;
-    border: 1px solid #eef0f5;
-    padding: 16px;
+    border: 1px solid #ffffff;
+    padding: 0px;
     background-color: #fdfdff;
-    margin-bottom: 16px;
+    margin-bottom: 3px;
     border-radius: 12px;
 }
 
@@ -45,8 +44,8 @@ input[type="text"] {
     padding: 12px;
     font-size: 16px;
     border-radius: 10px;
-    border: 1px solid #cbd5e1;
-    box-shadow: 0 3px 12px rgba(15, 23, 42, 0.08);
+    border: 1px solid #e0e0e0;
+    
 }
 
 button {
@@ -73,14 +72,14 @@ button:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #2563eb;
+    background-color: #000000;
     border: none;
     cursor: pointer;
     transition: background 0.3s ease, transform 0.1s ease;
 }
 
 .send-btn:hover {
-    background-color: #1d4ed8;
+    background-color: #f5994f;
     transform: translateY(-1px);
 }
 
@@ -98,14 +97,14 @@ button:hover {
     background-color: #f1f5f9;
     border-radius: 12px;
     padding: 10px 14px;
-    margin: 6px 0;
+    margin: 3px 0;
     display: inline-block;
     max-width: 95%;
     word-wrap: break-word;
 }
 
 .chat-bubble.user {
-    background-color: #dbeafe;
+    background-color: #d8d8d8;
     align-self: flex-end;
     float: right;
     text-align: right;
@@ -114,7 +113,7 @@ button:hover {
 
 .chat-bubble.bot {
     background-color: #ffffff;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #ffffff;
     max-width: 100%;
 }
 
@@ -138,8 +137,8 @@ button:hover {
 
 .gallery .item {
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 10px;
+    border-radius: 10px;
+    padding: 5px;
     background: #ffffff;
     box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
 }
