@@ -11,7 +11,7 @@ body {
 }
 
 .container {
-    max-width: 760px;
+    max-width: 750px;
     margin: auto;
     background: #ffffff;
     border-radius: 12px;
@@ -140,7 +140,6 @@ button:hover {
     border-radius: 0px;
     padding: 5px;
     background: #ffffff;
-    box-shadow: 0 0px 0px rgba(253, 253, 253, 0.06);
 }
 
 .gallery .item h4 {
@@ -152,7 +151,6 @@ button:hover {
     width: 100%;
     border-radius: 10px;
     object-fit: cover;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 }
 
 img.fade-in {
