@@ -5,7 +5,7 @@
 body {
     font-family: "Segoe UI", sans-serif;
     background: linear-gradient(135deg, #f6f7fb 0%, #eef2f7 100%);
-    padding: 40px 16px;
+    padding: 10px 5px;
     margin: 0;
     color: #0f172a;
 }
@@ -29,7 +29,7 @@ h2 {
     overflow-y: auto;
     border: 1px solid #ffffff;
     padding: 0px;
-    background-color: #fdfdff;
+    background-color: #ffffff;
     margin-bottom: 3px;
     border-radius: 12px;
 }
@@ -41,10 +41,10 @@ h2 {
 
 input[type="text"] {
     flex: 1;
-    padding: 12px;
+    padding: 5px;
     font-size: 16px;
     border-radius: 10px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid #ffffff;
     
 }
 
@@ -104,7 +104,7 @@ button:hover {
 }
 
 .chat-bubble.user {
-    background-color: #d8d8d8;
+    background-color: #eeeeee;
     align-self: flex-end;
     float: right;
     text-align: right;
@@ -136,11 +136,11 @@ button:hover {
 }
 
 .gallery .item {
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
+    border: 1px solid #ffffff;
+    border-radius: 0px;
     padding: 5px;
     background: #ffffff;
-    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+    box-shadow: 0 0px 0px rgba(253, 253, 253, 0.06);
 }
 
 .gallery .item h4 {
