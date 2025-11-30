@@ -36,6 +36,7 @@ TOPIC_META_PATH = os.path.join(BASE_DIR, "topics", "topic_meta.pkl")
 TOPIC_VECTORS_PATH = os.path.join(BASE_DIR, "topics", "topic_vectors.npy")
 
 LOG_DIR = resolve_path("CHATBOT_LOG_DIR", "logs")
+IMAGE_BASE_URL = os.getenv("IMAGE_BASE_URL", "https://cgi.vn/image/")
 
 # =========================
 # 2. OPENAI CLIENT & API KEY
@@ -104,6 +105,14 @@ def get_db_connection():
 
 def normalize_query_for_like(q: str) -> str:
     return f"%{q.strip()}%"
+
+
+def build_image_url(img_path: str) -> str:
+    """Normalize relative image path to absolute URL."""
+    if not img_path:
+        return ""
+    clean = img_path.replace("\\", "/").lstrip("/")
+    return f"{IMAGE_BASE_URL.rstrip('/')}/{clean}"
 
 
 # =========================
