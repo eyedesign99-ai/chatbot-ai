@@ -1,3 +1,14 @@
+function wireEnterToSend() {
+    const input = document.getElementById("user-input");
+    if (!input) return;
+    input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+}
+
 async function sendMessage() {
     const input = document.getElementById("user-input");
     const message = input.value.trim();
@@ -5,31 +16,40 @@ async function sendMessage() {
 
     appendMessage("Bạn", message);
     input.value = "";
-
     showLoadingIcon(true);
 
-    const response = await fetch("/chat", {
-        method: "POST",
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message })
-    });
+    try {
+        const response = await fetch("/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message })
+        });
 
-    const data = await response.json();
+        if (!response.ok) {
+            throw new Error(`Server returned ${response.status}`);
+        }
 
-    typeResponse("Bot", data.response);
-
-    showLoadingIcon(false);
+        const data = await response.json();
+        typeResponse("Bot", data.reply);
+    } catch (err) {
+        console.error("Send message failed:", err);
+        typeResponse("Bot", "Xin lỗi, hệ thống đang gặp sự cố. Vui lòng thử lại sau.");
+    } finally {
+        showLoadingIcon(false);
+    }
 }
 
 function appendMessage(sender, message) {
     const box = document.getElementById("chat-box");
     const div = document.createElement("div");
-    let displayName = (sender === "Bot") ? "CGI" : sender;
-    let isUser = (sender === "Bạn");
+    const displayName = sender === "Bot" ? "CGI" : sender;
+    const isUser = sender === "Bạn";
+
     div.classList.add("chat-row");
     div.innerHTML = isUser
         ? `<div class="chat-bubble user"><strong>${displayName}:</strong> ${message}</div>`
         : `<div class="chat-bubble bot"><strong>${displayName}:</strong> ${message}</div>`;
+
     box.appendChild(div);
     box.scrollTop = box.scrollHeight;
 }
@@ -43,10 +63,76 @@ function showLoadingIcon(show) {
            </svg>`;
 }
 
+function renderHtmlInChunks(bubble, htmlString, batchSize = 4) {
+    const box = document.getElementById("chat-box");
+    const temp = document.createElement("div");
+    temp.innerHTML = htmlString;
+
+    const gallery = temp.querySelector(".gallery");
+    const prefixNodes = Array.from(temp.children).filter(node => node !== gallery);
+    prefixNodes.forEach(node => bubble.appendChild(node));
+
+    if (!gallery) {
+        if (box) box.scrollTop = box.scrollHeight;
+        return;
+    }
+
+    const items = Array.from(gallery.children);
+    const galleryShell = document.createElement("div");
+    galleryShell.className = "gallery";
+    bubble.appendChild(galleryShell);
+
+    const loadBatch = () => {
+        if (!items.length) return;
+
+        const batch = items.splice(0, batchSize);
+        let pending = 0;
+
+        batch.forEach(item => {
+            const imgs = item.querySelectorAll("img");
+            pending += imgs.length;
+
+            imgs.forEach(img => {
+                img.classList.add("fade-in");
+                const markDone = () => {
+                    img.classList.add("show");
+                    pending -= 1;
+                    if (pending === 0) {
+                        if (box) box.scrollTop = box.scrollHeight;
+                        if (items.length) {
+                            setTimeout(loadBatch, 60);
+                        }
+                    }
+                };
+
+                if (img.complete) {
+                    markDone();
+                } else {
+                    img.onload = markDone;
+                    img.onerror = markDone;
+                }
+            });
+
+            galleryShell.appendChild(item);
+        });
+
+        if (pending === 0) {
+            if (box) box.scrollTop = box.scrollHeight;
+            if (items.length) {
+                setTimeout(loadBatch, 60);
+            }
+        }
+    };
+
+    loadBatch();
+}
+
 function typeResponse(sender, message) {
     const box = document.getElementById("chat-box");
     const div = document.createElement("div");
-    let displayName = (sender === "Bot") ? "CGI" : sender;
+    const displayName = sender === "Bot" ? "CGI" : sender;
+    const safeMessage = message || "";
+
     div.classList.add("chat-row");
 
     const bubble = document.createElement("div");
@@ -55,10 +141,25 @@ function typeResponse(sender, message) {
     const typingSpan = document.createElement("span");
     typingSpan.setAttribute("id", "typing-text");
 
-    // Tách phần text và phần HTML (sau cùng)
-    const parts = message.split(/(<img.*?>|<a.*?<\/a>|<p.*?<\/p>)/gi);
-    const textPart = parts[0];
-    const htmlParts = parts.slice(1).join("");
+    // Giữ phần intro gõ chữ từ từ; phần HTML (gallery, ảnh) xuất hiện sau
+    const htmlStartIndex = safeMessage.search(/<h[1-6]|<div|<img|<p|<a/i);
+    let textPart = htmlStartIndex >= 0 ? safeMessage.slice(0, htmlStartIndex) : safeMessage;
+    let htmlParts = htmlStartIndex >= 0 ? safeMessage.slice(htmlStartIndex) : "";
+
+    // Nếu nội dung bắt đầu bằng HTML (vd: <p>Intro...</p><div class="gallery">...), tách đoạn text đầu ra trước
+    if (!textPart && htmlParts) {
+        const tempExtract = document.createElement("div");
+        tempExtract.innerHTML = htmlParts;
+        const firstP = tempExtract.querySelector("p");
+        if (firstP && firstP.innerText.trim()) {
+            textPart = firstP.innerText.trim();
+            firstP.remove();
+            htmlParts = tempExtract.innerHTML;
+        } else if (tempExtract.textContent.trim()) {
+            textPart = tempExtract.textContent.trim();
+            htmlParts = "";
+        }
+    }
 
     bubble.innerHTML = `<strong>${displayName}:</strong> `;
     bubble.appendChild(typingSpan);
@@ -75,20 +176,10 @@ function typeResponse(sender, message) {
         } else {
             clearInterval(interval);
             if (htmlParts) {
-                const temp = document.createElement("div");
-                temp.innerHTML = htmlParts;
-                const imgs = temp.querySelectorAll("img");
-
-                imgs.forEach(img => {
-                    img.classList.add("fade-in");
-                    img.onload = () => {
-                        img.classList.add("show");
-                    };
-                });
-
-                bubble.appendChild(temp);
-                box.scrollTop = box.scrollHeight;
+                renderHtmlInChunks(bubble, htmlParts, 4);
             }
         }
     }, 10);
 }
+
+document.addEventListener("DOMContentLoaded", wireEnterToSend);

@@ -1,94 +1,91 @@
+* {
+    box-sizing: border-box;
+}
+
 body {
-    font-family: 'Segoe UI', sans-serif;
-    background-color: #ffffff;
-    padding: 40px;
+    font-family: "Segoe UI", sans-serif;
+    background: linear-gradient(135deg, #f6f7fb 0%, #eef2f7 100%);
+    padding: 40px 16px;
     margin: 0;
+    color: #0f172a;
 }
+
 .container {
-    max-width: 600px;
+    max-width: 760px;
     margin: auto;
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
 }
+
+h2 {
+    margin: 0 0 16px 0;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+}
+
 .chat-box {
-    height: 600px;
+    height: 520px;
     overflow-y: auto;
-    border: 1px solid #ffffff;
-    padding: 15px;
-    background-color: #ffffff;
-    margin-bottom: 15px;
-    border-radius: 8px;
+    border: 1px solid #eef0f5;
+    padding: 16px;
+    background-color: #fdfdff;
+    margin-bottom: 16px;
+    border-radius: 12px;
 }
+
 .input-area {
     display: flex;
     gap: 10px;
 }
+
 input[type="text"] {
     flex: 1;
     padding: 12px;
     font-size: 16px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    border-radius: 10px;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 3px 12px rgba(15, 23, 42, 0.08);
 }
+
 button {
     padding: 12px 20px;
     font-size: 16px;
-    background-color: #000307;
+    background-color: #111827;
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     cursor: pointer;
+    transition: background 0.3s ease, transform 0.1s ease;
 }
+
 button:hover {
-    background-color: #000305;
+    background-color: #0f172a;
+    transform: translateY(-1px);
 }
+
 .send-btn {
-    width: 40px;
-    height: 40px;
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
     padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #000000;
+    background-color: #2563eb;
     border: none;
     cursor: pointer;
-    transition: background 0.3s ease;
+    transition: background 0.3s ease, transform 0.1s ease;
 }
 
 .send-btn:hover {
-    background-color: #0056b3;
+    background-color: #1d4ed8;
+    transform: translateY(-1px);
 }
 
 .send-btn svg {
     pointer-events: none;
-}
-
-.chat-bubble {
-    background-color: #f0f0f0;
-    border-radius: 12px;
-    padding: 10px 14px;
-    margin: 6px 0;
-    display: inline-block;
-    max-width: 90%;
-    word-wrap: break-word;
-}
-
-.chat-bubble.user {
-    background-color: #badbfa;
-    border-radius: 12px;
-    padding: 10px 14px;
-    margin: 6px 0;
-    display: inline-block;
-    max-width: 70%;
-    word-wrap: break-word;
-    align-self: flex-end;
-    float: right;
-    text-align: right;
-    clear: both;
 }
 
 .chat-row {
@@ -97,13 +94,28 @@ button:hover {
     margin-bottom: 10px;
 }
 
-.chat-bubble.bot {
-    background-color: #f0f0f0;
+.chat-bubble {
+    background-color: #f1f5f9;
     border-radius: 12px;
     padding: 10px 14px;
+    margin: 6px 0;
     display: inline-block;
-    max-width: 100%;
+    max-width: 95%;
     word-wrap: break-word;
+}
+
+.chat-bubble.user {
+    background-color: #dbeafe;
+    align-self: flex-end;
+    float: right;
+    text-align: right;
+    clear: both;
+}
+
+.chat-bubble.bot {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    max-width: 100%;
 }
 
 .loading-icon {
@@ -117,12 +129,38 @@ button:hover {
     100% { transform: rotate(360deg); }
 }
 
+.gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 14px;
+    margin-top: 12px;
+}
+
+.gallery .item {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 10px;
+    background: #ffffff;
+    box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+}
+
+.gallery .item h4 {
+    margin: 0 0 8px 0;
+    font-size: 15px;
+}
+
+.gallery img {
+    width: 100%;
+    border-radius: 10px;
+    object-fit: cover;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
 img.fade-in {
     opacity: 0;
-    transition: opacity 1s ease-in-out;
+    transition: opacity 0.9s ease-in-out;
 }
 
 img.fade-in.show {
     opacity: 1;
 }
-
