@@ -369,12 +369,12 @@ class DesignerAgent:
                     f"style='max-width: 100%; border-radius: 10px;'>"
                 )
                 link_html = (
-                    f"<a href='https://cgi.vn/san-pham/{sp_id}' "
-                    f"target='_blank'><h5 style='display:inline'>Xem chi tiết</h5></a>"
+                    f"<a class='link-btn' href='https://cgi.vn/san-pham/{sp_id}' "
+                    f"target='_blank'>Xem chi tiết</a>"
                 )
                 ar_link_html = (
-                    f"<a href='https://cgi.vn/ar/{sp_id}.html' "
-                    f"target='_blank'><h5 style='display:inline'>Xem AR</h5></a>"
+                    f"<a class='link-btn' href='https://cgi.vn/ar/{sp_id}.html' "
+                    f"target='_blank'>Xem AR</a>"
                 )
 
                 item["image_html"] = image_html
@@ -417,8 +417,8 @@ class DesignerAgent:
             ar_link_html = item.get("ar_link_html") or ""
             links_combined = ""
             if ar_link_html or link_html:
-                separator = " | " if ar_link_html and link_html else ""
-                links_combined = f"<p>{ar_link_html}{separator}{link_html}</p>"
+                separator = "<span class=\"link-separator\">|</span>" if ar_link_html and link_html else ""
+                links_combined = f"<p class='links-row'>{ar_link_html}{separator}{link_html}</p>"
 
             block = f"""
             <div class="item" style="margin-bottom: 16px;">
