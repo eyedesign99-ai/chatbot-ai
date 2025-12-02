@@ -32,8 +32,9 @@ def resolve_path(env_name: str, default_relative: str) -> str:
 BASE_DIR = resolve_path("CHATBOT_DATA_DIR", "central_data")
 
 SQLITE_PATH = os.path.join(BASE_DIR, "sqlite", "paintings.db")
-TOPIC_META_PATH = os.path.join(BASE_DIR, "topics", "topic_meta.pkl")
-TOPIC_VECTORS_PATH = os.path.join(BASE_DIR, "topics", "topic_vectors.npy")
+# Semantic index data (fallback when keyword search returns nothing)
+TOPIC_META_PATH = os.path.join(BASE_DIR, "vectors", "meta.pkl")
+TOPIC_VECTORS_PATH = os.path.join(BASE_DIR, "vectors", "vectors.npy")
 
 LOG_DIR = resolve_path("CHATBOT_LOG_DIR", "logs")
 IMAGE_BASE_URL = os.getenv("IMAGE_BASE_URL", "https://cgi.vn/image/")
