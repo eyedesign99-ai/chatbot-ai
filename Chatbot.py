@@ -71,7 +71,6 @@ def load_topic_index():
         return
 
     if not (os.path.exists(TOPIC_META_PATH) and os.path.exists(TOPIC_VECTORS_PATH)):
-        print("⚠ Không tìm thấy topic index, bỏ qua semantic topic search.")
         TOPIC_VECTORS = None
         TOPIC_META = []
         return
@@ -80,7 +79,7 @@ def load_topic_index():
         TOPIC_META = pickle.load(f)
 
     TOPIC_VECTORS = np.load(TOPIC_VECTORS_PATH).astype("float32")
-    print(f"✅ Đã nạp topic index: {TOPIC_VECTORS.shape[0]} topic")
+    # Topic index loaded; keep silent to avoid noisy CLI startup.
 
 
 @lru_cache(maxsize=256)
@@ -193,7 +192,11 @@ class RetrieverAgent:
         if TOPIC_VECTORS is None or len(TOPIC_META) == 0:
             return []
 
-        q_vec = embed_text(user_input)
+        try:
+            q_vec = embed_text(user_input)
+        except Exception as e:
+            print(f"[Retriever] Semantic embedding error: {e}")
+            return []
         q_norm = q_vec / (np.linalg.norm(q_vec) + 1e-8)
         topic_norm = TOPIC_VECTORS / (
             np.linalg.norm(TOPIC_VECTORS, axis=1, keepdims=True) + 1e-8
@@ -205,7 +208,9 @@ class RetrieverAgent:
         candidate_ids = []
         for idx in top_idx:
             meta = TOPIC_META[idx]
-            ids = meta.get("suggest_ids", [])
+            ids = meta.get("suggest_ids") or []
+            if not ids and meta.get("id") is not None:
+                ids = [meta.get("id")]
             candidate_ids.extend(ids)
 
         # loại trùng, giữ thứ tự
