@@ -3,6 +3,8 @@ import json
 import sqlite3
 import pickle
 import csv
+import re
+import unicodedata
 from typing import Optional
 from datetime import datetime
 from uuid import uuid4
@@ -119,6 +121,27 @@ def build_image_url(img_path: str) -> str:
 # 4. AGENT: RETRIEVER
 # =========================
 
+STOPWORDS = {"tranh", "buc", "con", "hinh", "anh", "ve"}
+
+
+def strip_accents(text: str) -> str:
+    """Remove accents for accent-insensitive comparisons."""
+    normalized = unicodedata.normalize("NFD", text or "")
+    return "".join(ch for ch in normalized if unicodedata.category(ch) != "Mn")
+
+
+def extract_tokens(query: str):
+    """
+    Normalize and split the user query into tokens:
+    - lowercase + strip accents
+    - split on non-alphanumeric
+    - drop stopwords like 'tranh', 'con' to focus on core nouns
+    """
+    clean = strip_accents((query or "").lower())
+    raw_tokens = re.split(r"[^a-z0-9]+", clean)
+    return [t for t in raw_tokens if t and t not in STOPWORDS]
+
+
 class RetrieverAgent:
     """
     Nhiệm vụ:
@@ -128,34 +151,32 @@ class RetrieverAgent:
 
     def keyword_search_paintings(self, user_input: str, limit: Optional[int] = None):
         conn = get_db_connection()
+        conn.create_function("strip_accents", 1, strip_accents)
         cur = conn.cursor()
 
-        like_pattern = normalize_query_for_like(user_input)
+        tokens = extract_tokens(user_input)
+        if not tokens:
+            normalized = strip_accents((user_input or "").lower().strip())
+            tokens = [normalized] if normalized else []
 
-        query = """
+        columns = ["title", "keywords", "themes", "emotions"]
+        clauses = []
+        params = []
+        for tok in tokens:
+            like_pattern = f"%{tok}%"
+            clause = " OR ".join([f"strip_accents(lower({col})) LIKE ?" for col in columns])
+            clauses.append(f"({clause})")
+            params.extend([like_pattern] * len(columns))
+
+        where_sql = " AND ".join(clauses) if clauses else "1=1"
+
+        query = f"""
             SELECT id, title, image, general_info, keywords, themes, emotions,
                    description_short, json_path
             FROM paintings
-            WHERE 
-                title LIKE ? OR
-                keywords LIKE ? OR
-                themes LIKE ? OR
-                emotions LIKE ?
-            ORDER BY 
-                CASE 
-                    WHEN title LIKE ? THEN 0
-                    WHEN keywords LIKE ? THEN 1
-                    WHEN themes LIKE ? THEN 2
-                    WHEN emotions LIKE ? THEN 3
-                    ELSE 4
-                END,
-                id ASC
+            WHERE {where_sql}
+            ORDER BY id ASC
         """
-
-        params = [
-            like_pattern, like_pattern, like_pattern, like_pattern,
-            like_pattern, like_pattern, like_pattern, like_pattern,
-        ]
         if limit is not None:
             query += "\n            LIMIT ?;"
             params.append(limit)
