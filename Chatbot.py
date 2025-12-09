@@ -39,7 +39,10 @@ TOPIC_META_PATH = os.path.join(BASE_DIR, "vectors", "meta.pkl")
 TOPIC_VECTORS_PATH = os.path.join(BASE_DIR, "vectors", "vectors.npy")
 
 LOG_DIR = resolve_path("CHATBOT_LOG_DIR", "logs")
-IMAGE_BASE_URL = os.getenv("IMAGE_BASE_URL", "https://cgi.vn/image/")
+IMAGE_BASE_URL = os.getenv(
+    "IMAGE_BASE_URL",
+    "https://painting-cgi.s3.ap-southeast-1.amazonaws.com/",
+)
 
 # =========================
 # 2. OPENAI CLIENT & API KEY
@@ -114,6 +117,8 @@ def build_image_url(img_path: str) -> str:
     if not img_path:
         return ""
     clean = img_path.replace("\\", "/").lstrip("/")
+    if clean.startswith("cgi/"):
+        clean = clean[len("cgi/"):]
     return f"{IMAGE_BASE_URL.rstrip('/')}/{clean}"
 
 
@@ -390,9 +395,10 @@ class DesignerAgent:
             if isinstance(item, dict) and "image" in item and "id" in item:
                 img_path = item["image"]  # vd: "cgi/28.jpg"
                 sp_id = item["id"]        # vd: 28
+                image_url = build_image_url(img_path)
 
                 image_html = (
-                    f"<img src='/static/product/{img_path}' "
+                    f"<img src='{image_url}' "
                     f"style='max-width: 100%; border-radius: 10px;'>"
                 )
                 link_html = (
